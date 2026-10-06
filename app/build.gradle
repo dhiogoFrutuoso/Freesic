@@ -1,0 +1,50 @@
+plugins { id 'com.android.application' }
+// Um checkout novo compila debug sem precisar da chave privada de distribuição.
+def personalSigningFile = rootProject.file('signing.properties')
+def hasPersonalSigning = personalSigningFile.isFile()
+android {
+    namespace 'com.freesic.app'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.freesic.app'
+        minSdk 26
+        targetSdk 36
+        versionCode 3
+        versionName '1.2.0'
+        testInstrumentationRunner 'com.freesic.app.FreesicInstrumentation'
+    }
+    signingConfigs {
+        if (hasPersonalSigning) {
+            personal {
+                def signing = new Properties()
+                personalSigningFile.withInputStream { signing.load(it) }
+                storeFile rootProject.file(signing.getProperty('storeFile', 'freesic-personal.jks'))
+                storePassword signing.getProperty('storePassword', '')
+                keyAlias signing.getProperty('keyAlias', 'freesic')
+                keyPassword signing.getProperty('keyPassword', '')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            if (hasPersonalSigning) signingConfig signingConfigs.personal
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            if (hasPersonalSigning) signingConfig signingConfigs.personal
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.returnDefaultValues = true }
+    lint { abortOnError true; disable 'MissingTranslation' }
+}
+dependencies {
+    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'androidx.media3:media3-exoplayer:1.9.3'
+    implementation 'androidx.media3:media3-session:1.9.3'
+    implementation 'androidx.media3:media3-ui:1.9.3'
+    testImplementation 'junit:junit:4.13.2'
+}

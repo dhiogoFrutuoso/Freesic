@@ -1,0 +1,52 @@
+{
+  "app": "Freesic",
+  "version": "1.2.0",
+  "versionCode": 3,
+  "package": "com.freesic.app",
+  "minSdk": 26,
+  "targetSdk": 36,
+  "apk_bytes": 2099068,
+  "apk_sha256": "1757665d3c1b3c7dced90d7bba0ddff6d34635a3ecd1909272b691ffc09c889a",
+  "unit_tests": 8,
+  "playback_integration_checks": 16,
+  "artwork_notification_checks": 9,
+  "visual_comparison_rounds": 3,
+  "emulators": [
+    "Android 15 / API 35 AOSP ATD x86_64",
+    "Android 9 / API 28 Google APIs x86_64"
+  ],
+  "lint_errors": 0,
+  "lint_warnings": 64,
+  "internet_permission": false,
+  "native_libraries": [],
+  "signature": "APK v2 verified; same certificate as 1.0.0 and 1.1.0",
+  "checks": {
+    "playlist-check-1.2": {
+      "cards_with_covers": true,
+      "library_multiselect": true,
+      "selected_count_correct": true,
+      "add_persists": true,
+      "duplicates_marked": true,
+      "opens_file_picker": false
+    },
+    "release-check-1.2": {
+      "release_install": true,
+      "two_playlists_preserved": true,
+      "three_final_reference_screens": true,
+      "compact_320x640_player_actions_visible": true,
+      "compact_volume_equalizer_accessible": true,
+      "devices": [
+        "API 35",
+        "API 28"
+      ]
+    }
+  },
+  "notification_has_actual_artwork": true,
+  "limits": [
+    "Não testado em aparelho físico",
+    "Identidade pixel a pixel não afirmada; diferenças registradas em Freesic/design-qa.md",
+    "Cores e composição do cartão de mídia variam conforme Android e capa",
+    "Capas automáticas dependem de imagem local; o APK inclui apenas uma correspondência offline específica para SÓ ROCK 2",
+    "Amplificação é ganho de sinal e depende da saída de áudio"
+  ]
+}

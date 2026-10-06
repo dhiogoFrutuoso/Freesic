@@ -1,0 +1,6 @@
+# Copie este modelo para signing.properties e preencha apenas no seu computador.
+# Nunca publique signing.properties nem a chave de assinatura.
+storeFile=freesic-personal.jks
+storePassword=SUBSTITUA_PELA_SENHA_LOCAL
+keyAlias=freesic
+keyPassword=SUBSTITUA_PELA_SENHA_LOCAL

@@ -1,0 +1,20 @@
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:alertDialogTheme">@style/FreesicDialog</item>
+        <item name="android:colorBackgroundFloating">#162238</item>
+        <item name="android:colorBackground">#0B1220</item>
+        <item name="android:textColorPrimary">#F4F7FC</item>
+        <item name="android:textColorSecondary">#9BAEC8</item>
+        <item name="android:colorAccent">#65ADFF</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#0B1220</item>
+        <item name="android:statusBarColor">#0B1220</item>
+        <item name="android:navigationBarColor">#0B1220</item>
+    </style>
+    <style name="FreesicDialog" parent="android:style/Theme.Material.Dialog.Alert"><item name="android:fontFamily">@font/inter_regular</item><item name="android:colorAccent">#65ADFF</item><item name="android:windowBackground">@drawable/dialog_surface</item><item name="android:colorBackgroundFloating">#14243A</item><item name="android:textColorPrimary">#F4F7FC</item><item name="android:textColorSecondary">#9BAEC8</item></style>
+    <color name="icon_bg">#65ADFF</color>
+    <string name="app_name">Freesic</string>
+    <string name="widget_description">Sua música a um toque. Abre o Freesic no player.</string>
+</resources>

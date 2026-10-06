@@ -1,0 +1,10 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp" android:background="#18382B">
+    <ImageView android:layout_width="48dp" android:layout_height="48dp" android:src="@drawable/ic_notification" android:contentDescription="Freesic"/>
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:paddingStart="12dp">
+        <TextView android:id="@+id/widget_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Freesic" android:textColor="#65ADFF" android:textStyle="bold" android:textSize="18sp" android:maxLines="1" android:ellipsize="end"/>
+        <TextView android:id="@+id/widget_subtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Sua música. Seu espaço." android:textColor="#FFFFFF" android:textSize="12sp" android:maxLines="1"/>
+    </LinearLayout>
+    <TextView android:id="@+id/widget_previous" android:layout_width="40dp" android:layout_height="48dp" android:gravity="center" android:text="❮" android:textColor="#FFFFFF" android:textSize="20sp" android:contentDescription="Faixa anterior"/>
+    <TextView android:id="@+id/widget_play" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center" android:text="▶" android:textColor="#65ADFF" android:textSize="24sp" android:contentDescription="Reproduzir ou pausar"/>
+    <TextView android:id="@+id/widget_next" android:layout_width="40dp" android:layout_height="48dp" android:gravity="center" android:text="❯" android:textColor="#FFFFFF" android:textSize="20sp" android:contentDescription="Próxima faixa"/>
+</LinearLayout>

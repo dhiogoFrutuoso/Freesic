@@ -1,0 +1,103 @@
+FREESIC 1.2 — VALIDAÇÃO
+
+
+PASS 16 integration checks
+playlist deduplicates items
+backup merge preserves order without duplication
+library discovers indexed local audio without file import
+touching a library row starts the selected track and queue
+local WAV decodes and playback clock advances
+pause command changes state
+seek reaches requested position
+speed control applied
+shuffle and repeat commands applied
+queue changes selected item
+sleep timer configured
+300 percent amplification applies 954 millibels to active audio session
+normal gain disables amplification
+APK has no INTERNET permission
+playback continues with activity in background
+queue snapshot persisted
+
+
+PASS 9 artwork checks
+embedded FLAC artwork decoded
+actual downloaded audio has no embedded picture
+actual downloaded song resolves its published offline cover
+known-cover matcher excludes remixes
+unknown missing artwork stays absent instead of inventing an album cover
+current media item retains resolved cover bytes
+actual posted media notification contains the song artwork
+manual cover overrides cached artwork
+artwork metadata refresh preserves playback position
+
+INTERFACE
+{
+  "playlist-check-1.2": {
+    "cards_with_covers": true,
+    "library_multiselect": true,
+    "selected_count_correct": true,
+    "add_persists": true,
+    "duplicates_marked": true,
+    "opens_file_picker": false
+  },
+  "release-check-1.2": {
+    "release_install": true,
+    "two_playlists_preserved": true,
+    "three_final_reference_screens": true,
+    "compact_320x640_player_actions_visible": true,
+    "compact_volume_equalizer_accessible": true,
+    "devices": [
+      "API 35",
+      "API 28"
+    ]
+  }
+}
+
+JVM
+<testsuite name="com.freesic.app.MusicLogicTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-06T19:09:54.892Z" hostname="DESKTOP-M55KFIU" time="0.037">
+  <properties />
+  <testcase name="timeSupportsLongAudio" classname="com.freesic.app.MusicLogicTest" time="0.016" />
+  <testcase name="onlyLocalSchemesAccepted" classname="com.freesic.app.MusicLogicTest" time="0.001" />
+  <testcase name="lyricBoundaryBeforeFirstAndExact" classname="com.freesic.app.MusicLogicTest" time="0.007" />
+  <testcase name="searchIgnoresAccentsAndCase" classname="com.freesic.app.MusicLogicTest" time="0.009" />
+  <testcase name="lrcMultipleTimestampsFractionAndOffset" classname="com.freesic.app.MusicLogicTest" time="0.001" />
+  <testcase name="amplificationClampsOutOfRangeValues" classname="com.freesic.app.MusicLogicTest" time="0.0" />
+  <testcase name="malformedLyricsRemainSafe" classname="com.freesic.app.MusicLogicTest" time="0.001" />
+  <testcase name="amplificationConvertsAmplitudeToMillibels" classname="com.freesic.app.MusicLogicTest" time="0.0" />
+  <system-out />
+  <system-err />
+</testsuite>
+
+PERMISSÕES
+package: com.freesic.app
+uses-permission: name='android.permission.READ_EXTERNAL_STORAGE' maxSdkVersion='32'
+uses-permission: name='android.permission.READ_MEDIA_AUDIO'
+uses-permission: name='android.permission.READ_MEDIA_VIDEO'
+uses-permission: name='android.permission.READ_MEDIA_VISUAL_USER_SELECTED'
+uses-permission: name='android.permission.FOREGROUND_SERVICE'
+uses-permission: name='android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK'
+uses-permission: name='android.permission.WAKE_LOCK'
+uses-permission: name='android.permission.MODIFY_AUDIO_SETTINGS'
+permission: com.freesic.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='com.freesic.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+
+
+ASSINATURA
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Freesic Personal, OU=Personal, O=Freesic, C=BR
+Signer #1 certificate SHA-256 digest: 38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b
+Signer #1 certificate SHA-1 digest: c85531c59ddc2925b3d30d312ec3510677a87f17
+Signer #1 certificate MD5 digest: b3f3bb9e2d40c270e976fae71b3ba667
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 3072
+Signer #1 public key SHA-256 digest: e3d58eec1b034d504e43711e6dc1da61612a10417cdc702d8815c026b9592f07
+Signer #1 public key SHA-1 digest: 2db48ee9f93b65afce28be991c256d9a1aa2b870
+Signer #1 public key MD5 digest: 8e6dc49f8dd55b1dce56547122145722

@@ -1,0 +1,86 @@
+[
+  {
+    "file": "fluxo-player.md",
+    "sha256": "c092e9cbb33b49993bd029c774941c9fe2d0cb4f31a2036b27b4d7ba069576f2",
+    "bytes": 11139,
+    "records_or_lines": 123
+  },
+  {
+    "file": "indice-evidencias.json",
+    "sha256": "5ec27159ca1ab00a2c21e2e3dc5e35bd2204c7f1de84fc1972e14fbc3f401eda",
+    "bytes": 4893,
+    "records_or_lines": 4
+  },
+  {
+    "file": "mapa-componentes.md",
+    "sha256": "95a6cc1b3433ccd17336c64b2206da5aac2ebeb48c59a4eb5d4268219179fe74",
+    "bytes": 13896,
+    "records_or_lines": 172
+  },
+  {
+    "file": "metodos-selecionados.json",
+    "sha256": "641d214cef2159b9ba4eb59a448952cb73cff58a83d94f41da1a48481f5f8648",
+    "bytes": 348035,
+    "records_or_lines": 265
+  },
+  {
+    "file": "native-elf-evidence.json",
+    "sha256": "40d9f3e7482e49a847b81ae3e381090f426112bfb1b67695c6b283c2a46c55d8",
+    "bytes": 1054634,
+    "records_or_lines": 68
+  },
+  {
+    "file": "rea-artifact.json",
+    "sha256": "a0d12fd9683b245f2df848076216773fd97c4bc40baacfd04b561d798dfa71e7",
+    "bytes": 515,
+    "records_or_lines": 7
+  },
+  {
+    "file": "relatorio-e-plano.md",
+    "sha256": "544499fde56766750a356097327e214d71e15d80342eb4576cfe39f889d1e533",
+    "bytes": 21394,
+    "records_or_lines": 263
+  },
+  {
+    "file": "url-literals.json",
+    "sha256": "e377a29f0378f1ad2f6d3fe43e428bf47498bf04cb595c15d3cafca7b6051f9b",
+    "bytes": 14504,
+    "records_or_lines": 176
+  },
+  {
+    "file": "AndroidManifest.xml",
+    "sha256": "09eb7e769f602e2c3fefefcf8a10dad448721be0621bf0e9e84ee9c8e125e5e3",
+    "bytes": 60183,
+    "records_or_lines": 814
+  },
+  {
+    "file": "api-call-evidence.json",
+    "sha256": "b8e291098c00966793d575847fccbf3d76e84eda18be081ef33689fcafe57665",
+    "bytes": 642390,
+    "records_or_lines": 1060
+  },
+  {
+    "file": "apk-inventory.json",
+    "sha256": "d2461a29c5d2a79b1c5405bb8507927fc132f73b0b7f08aff1c02e4f4798646e",
+    "bytes": 252586,
+    "records_or_lines": 2878
+  },
+  {
+    "file": "apk-metadata.json",
+    "sha256": "3e5ba9a09d734cc5d3b07e93d869bd45f4eded0ecb305551c3eaf5b682873b7d",
+    "bytes": 10207,
+    "records_or_lines": 11
+  },
+  {
+    "file": "dex-classes.json",
+    "sha256": "f8f287dbceac653020415f66fc07c8f85ebb77ddb21fdfd39074f872f702a5f1",
+    "bytes": 4924270,
+    "records_or_lines": 33137
+  },
+  {
+    "file": "evidencias-dex.txt",
+    "sha256": "718697134e1529d41d664e47c0741bfe9d112ccdfc22040234f0f59ee5d0f24b",
+    "bytes": 64161,
+    "records_or_lines": 1154
+  }
+]
