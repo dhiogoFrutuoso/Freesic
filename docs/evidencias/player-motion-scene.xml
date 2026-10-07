@@ -1,0 +1,273 @@
+<MotionScene xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
+  <Transition android:id="@7F0A05A8" app:constraintSetEnd="@7F0A00B4" app:constraintSetStart="@7F0A00B7" app:duration="600" app:motionInterpolator="cubic-bezier(.56,1.25,.6,1)">
+    <OnSwipe app:dragDirection="0" app:dragThreshold="10.000000" app:touchAnchorId="@7F0A0404" app:touchAnchorSide="0"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="17" app:motionTarget="@7F0A068E"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="17" app:motionTarget="@7F0A0732"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="17" app:motionTarget="@7F0A05C4"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="17" app:motionTarget="@7F0A05C1"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A0058"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A004C"/>
+    </KeyFrameSet>
+  </Transition>
+  <ViewTransition android:id="@7F0A0291" app:duration="300" app:motionTarget="@7F0A06BF" app:onStateTransition="4" app:viewTransitionMode="2">
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" android:translationY="16777136.000000dip" app:framePosition="100"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="50"/>
+    </KeyFrameSet>
+  </ViewTransition>
+  <ViewTransition android:id="@7F0A0292" app:duration="300" app:motionTarget="@7F0A06C0" app:onStateTransition="4" app:viewTransitionMode="2">
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="1.000000" android:translationY="0.000000dip" app:framePosition="100"/>
+    </KeyFrameSet>
+  </ViewTransition>
+  <ViewTransition app:duration="150" app:motionTarget="press_anim" app:onStateTransition="3" app:viewTransitionMode="2">
+    <KeyFrameSet>
+      <KeyAttribute android:scaleX="0.800000" android:scaleY="0.800000" app:framePosition="100"/>
+    </KeyFrameSet>
+  </ViewTransition>
+  <ViewTransition android:id="@7F0A04A3" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)" app:motionTarget="@7F0A0177" app:onStateTransition="4" app:viewTransitionMode="0">
+    <KeyFrameSet>
+      <KeyAttribute android:scaleX="0.900000" android:scaleY="0.900000" app:framePosition="100"/>
+    </KeyFrameSet>
+  </ViewTransition>
+  <ViewTransition android:id="@7F0A04AE" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)" app:motionTarget="@7F0A0177" app:onStateTransition="4" app:viewTransitionMode="0">
+    <KeyFrameSet>
+      <KeyAttribute android:scaleX="1.000000" android:scaleY="1.000000" app:framePosition="100"/>
+    </KeyFrameSet>
+  </ViewTransition>
+  <Transition android:id="@7F0A05AD" app:constraintSetEnd="@7F0A00B6" app:constraintSetStart="@7F0A00B4" app:duration="400" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="0" app:limitBoundsTo="@7F0A03D0" app:onTouchUp="0" app:touchAnchorSide="0"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A068E"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A0732"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A050F"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C4"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C1"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A05AC" app:constraintSetEnd="@7F0A00B5" app:constraintSetStart="@7F0A00B4" app:duration="400" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="0" app:limitBoundsTo="@7F0A0209" app:onTouchUp="0" app:touchAnchorSide="0"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A068E"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A0732"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A050F"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C4"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C1"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A05AE" app:autoTransition="0" app:constraintSetEnd="@7F0A00B9" app:constraintSetStart="@7F0A00B4" app:duration="400" app:motionInterpolator="cubic-bezier(.2,0,.4,1)" app:pathMotionArc="0">
+    <OnSwipe app:dragDirection="0" app:limitBoundsTo="@7F0A04BC" app:touchAnchorSide="0"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A068E"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A0732"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="80" app:motionTarget="@7F0A050F"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C4"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A05C1"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A0274" app:constraintSetEnd="@7F0A013D" app:constraintSetStart="@7F0A00B4" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="4" app:onTouchUp="0" app:touchAnchorSide="5"/>
+    <KeyFrameSet>
+      <KeyAttribute android:scaleX="0.900000" android:scaleY="0.900000" app:framePosition="30" app:motionTarget="@7F0A0177"/>
+      <KeyAttribute android:scaleX="0.900000" android:scaleY="0.900000" app:framePosition="70" app:motionTarget="@7F0A0179"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A00CE" app:constraintSetEnd="@7F0A013F" app:constraintSetStart="@7F0A00B4" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="5" app:onTouchUp="0" app:touchAnchorSide="6"/>
+    <KeyFrameSet>
+      <KeyAttribute android:scaleX="0.900000" android:scaleY="0.900000" app:framePosition="30" app:motionTarget="@7F0A0177"/>
+      <KeyAttribute android:scaleX="0.900000" android:scaleY="0.900000" app:framePosition="70" app:motionTarget="@7F0A0178"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A0275" app:constraintSetEnd="@7F0A013E" app:constraintSetStart="@7F0A00B7" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="4" app:touchAnchorId="@7F0A0734" app:touchAnchorSide="5"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A0179"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A0734"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="30" app:motionTarget="@7F0A0690"/>
+    </KeyFrameSet>
+  </Transition>
+  <Transition android:id="@7F0A00CF" app:constraintSetEnd="@7F0A0140" app:constraintSetStart="@7F0A00B7" app:duration="300" app:motionInterpolator="cubic-bezier(.2,0,.4,1)">
+    <OnSwipe app:dragDirection="5" app:touchAnchorId="@7F0A0733" app:touchAnchorSide="6"/>
+    <KeyFrameSet>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="70" app:motionTarget="@7F0A0177"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="70" app:motionTarget="@7F0A0732"/>
+      <KeyAttribute android:alpha="0.000000" app:framePosition="70" app:motionTarget="@7F0A068E"/>
+    </KeyFrameSet>
+  </Transition>
+  <ConstraintSet android:id="@7F0A00B7">
+    <Constraint android:id="@7F0A0404" android:layout_width="-1" android:layout_height="@7F070356" app:layout_constraintBottom_toBottomOf="@7F0A041F"/>
+    <ConstraintOverride android:id="@7F0A00EA" android:layout_marginBottom="16776716.000000dip"/>
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <ConstraintOverride android:id="@7F0A05C5" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C2" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C6" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C3" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A0733" android:visibility="0" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A068F" android:alpha="0.000000" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0734" android:visibility="0" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0690" android:alpha="0.000000" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0178" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginEnd="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintEnd_toStartOf="@7F0A0733"/>
+    <Constraint android:id="@7F0A0179" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toEndOf="0"/>
+    <Constraint android:id="@7F0A05C4" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A0732" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0732" app:lp_useLineSpacingExtra="false"/>
+    <Constraint android:id="@7F0A05C1" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0058" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A068E" app:lp_useLineSpacingExtra="false"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0405" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="2.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0405" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0405" android:visibility="0"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A00B4">
+    <ConstraintOverride android:id="@7F0A068E" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A05C1" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A05C2" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A0059" app:layout_constraintEnd_toStartOf="@7F0A004D" app:layout_constraintStart_toStartOf="@7F0A05C5" app:layout_constraintTop_toTopOf="@7F0A0059" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A05C3" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A005A" app:layout_constraintEnd_toStartOf="@7F0A004E" app:layout_constraintStart_toStartOf="@7F0A05C6" app:layout_constraintTop_toTopOf="@7F0A005A" app:visibilityMode="1"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A00B6">
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginTop="58.000000dip" android:layout_marginStart="16.000000dip" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="0"/>
+    <Constraint android:id="@7F0A05C4" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A0732" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0732"/>
+    <Constraint android:id="@7F0A05C1" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0058" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A068E"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0060" android:visibility="0" android:alpha="1.000000"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0060" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0177" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toTopOf="@7F0A050F" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:lp_useLineSpacingExtra="false" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A050F" android:visibility="0" android:layout_width="0.000000dip" android:layout_height="20.000000dip" android:layout_marginTop="7.000000dip" android:layout_marginStart="16777202.000000dip" android:layout_marginEnd="6.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0177" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A068E"/>
+    <Constraint android:id="@7F0A03D0" android:layout_width="-1" android:layout_height="0.000000dip" android:layout_marginTop="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintTop_toBottomOf="@7F0A0177"/>
+    <ConstraintOverride android:id="@7F0A066B" android:visibility="0"/>
+    <Constraint android:id="@7F0A0078" android:visibility="1" android:layout_width="-1" android:layout_height="400.000000dip" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toBottomOf="@7F0A066D"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A00B5">
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginTop="58.000000dip" android:layout_marginStart="16.000000dip" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="0"/>
+    <Constraint android:id="@7F0A05C4" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A0732" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0732"/>
+    <Constraint android:id="@7F0A05C1" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0058" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A068E"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0060" android:visibility="0" android:alpha="1.000000"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0060" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0177" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toTopOf="@7F0A050F" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:lp_useLineSpacingExtra="false" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A050F" android:visibility="0" android:layout_width="0.000000dip" android:layout_height="20.000000dip" android:layout_marginTop="7.000000dip" android:layout_marginStart="16777202.000000dip" android:layout_marginEnd="6.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0177" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A068E"/>
+    <Constraint android:id="@7F0A0209" android:layout_width="-1" android:layout_height="0.000000dip" android:layout_marginTop="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintTop_toBottomOf="@7F0A0177"/>
+    <ConstraintOverride android:id="@7F0A066B" android:visibility="0"/>
+    <Constraint android:id="@7F0A0078" android:visibility="1" android:layout_width="-1" android:layout_height="400.000000dip" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toBottomOf="@7F0A066D"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A00B9">
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginTop="58.000000dip" android:layout_marginStart="16.000000dip" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="0"/>
+    <Constraint android:id="@7F0A05C4" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A0732" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0732"/>
+    <Constraint android:id="@7F0A05C1" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0058" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A068E"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0060" android:visibility="0" android:alpha="1.000000"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0060" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0177" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toTopOf="@7F0A050F" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:lp_useLineSpacingExtra="false" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A050F" android:visibility="0" android:layout_width="0.000000dip" android:layout_height="20.000000dip" android:layout_marginTop="7.000000dip" android:layout_marginStart="16777202.000000dip" android:layout_marginEnd="6.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0177" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A068E"/>
+    <Constraint android:id="@7F0A04BC" android:layout_width="-1" android:layout_height="0.000000dip" android:layout_marginTop="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintTop_toBottomOf="@7F0A0177"/>
+    <ConstraintOverride android:id="@7F0A066B" android:visibility="0"/>
+    <Constraint android:id="@7F0A0078" android:visibility="1" android:layout_width="-1" android:layout_height="400.000000dip" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toBottomOf="@7F0A066D"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A013D">
+    <Constraint android:id="@7F0A0177" android:layout_width="300.000000dip" android:layout_height="300.000000dip" android:scaleX="0.900000" android:scaleY="0.900000" android:layout_marginEnd="32.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0179" app:layout_constraintEnd_toStartOf="0" app:layout_constraintTop_toTopOf="@7F0A0179"/>
+    <Constraint android:id="@7F0A05C4" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="8.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0177" app:layout_constraintStart_toStartOf="@7F0A0177" app:layout_constraintTop_toBottomOf="@7F0A0177"/>
+    <Constraint android:id="@7F0A05C1" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A0058" app:layout_constraintEnd_toStartOf="@7F0A004C" app:layout_constraintStart_toStartOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0058" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0058" android:layout_width="32.000000dip" android:layout_height="32.000000dip" android:layout_marginTop="4.000000dip" android:layout_marginEnd="@7F070488" app:layout_constraintEnd_toStartOf="0" app:layout_constraintTop_toBottomOf="@7F0A05C4"/>
+    <Constraint android:id="@7F0A0179" android:layout_width="-1" android:layout_height="0.000000dip" android:layout_marginStart="32.000000dip" android:layout_marginEnd="32.000000dip" app:layout_constraintBottom_toTopOf="@7F0A066D" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="@7F0A066D"/>
+    <Constraint android:id="@7F0A05C6" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="8.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toBottomOf="@7F0A0179" app:lp_useLineSpacingExtra="false"/>
+    <Constraint android:id="@7F0A05C3" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A005A" app:layout_constraintEnd_toStartOf="@7F0A004E" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A005A" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A005A" android:layout_width="32.000000dip" android:layout_height="32.000000dip" android:layout_marginTop="4.000000dip" android:layout_marginEnd="16777208.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintTop_toBottomOf="@7F0A05C6"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A013F">
+    <Constraint android:id="@7F0A0177" android:layout_width="300.000000dip" android:layout_height="300.000000dip" android:scaleX="0.900000" android:scaleY="0.900000" android:layout_marginStart="32.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0178" app:layout_constraintStart_toEndOf="0" app:layout_constraintTop_toTopOf="@7F0A0178"/>
+    <Constraint android:id="@7F0A05C4" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="8.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0177" app:layout_constraintStart_toStartOf="@7F0A0177" app:layout_constraintTop_toBottomOf="@7F0A0177"/>
+    <Constraint android:id="@7F0A05C1" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A0058" app:layout_constraintEnd_toStartOf="@7F0A004C" app:layout_constraintStart_toStartOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0058" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0178" android:layout_width="-1" android:layout_height="0.000000dip" android:layout_marginStart="32.000000dip" android:layout_marginEnd="32.000000dip" app:layout_constraintBottom_toTopOf="@7F0A066D" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="@7F0A066D"/>
+    <Constraint android:id="@7F0A05C5" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="8.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toBottomOf="@7F0A0178" app:lp_useLineSpacingExtra="false"/>
+    <Constraint android:id="@7F0A05C2" android:layout_width="0.000000dip" android:layout_height="-2" app:layout_constraintBottom_toBottomOf="@7F0A0059" app:layout_constraintEnd_toStartOf="@7F0A004D" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0059" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0059" android:layout_width="32.000000dip" android:layout_height="32.000000dip" android:layout_marginTop="4.000000dip" android:layout_marginEnd="16777208.000000dip" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintTop_toBottomOf="@7F0A05C5"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A013E">
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0404" android:layout_width="-1" android:layout_height="@7F070356" app:layout_constraintBottom_toBottomOf="@7F0A041F"/>
+    <ConstraintOverride android:id="@7F0A00EA" android:layout_marginBottom="16776716.000000dip"/>
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0405" android:visibility="0"/>
+    <ConstraintOverride android:id="@7F0A05C4" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C1" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C5" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C2" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C6" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C3" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A068F" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0690" android:alpha="1.000000" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginEnd="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintEnd_toStartOf="@7F0A0732"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="152.000000dip" android:layout_height="-2" android:alpha="0.000000" android:layout_marginStart="@7F07048A" android:layout_marginEnd="120.000000dip" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintEnd_toStartOf="0" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="2.000000dip" android:alpha="0.000000" app:layout_constraintBottom_toBottomOf="@7F0A0405" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0179" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="1.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <Constraint android:id="@7F0A0734" android:layout_width="152.000000dip" android:layout_height="-2" android:alpha="1.000000" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A0690" app:layout_constraintStart_toEndOf="@7F0A0179" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A0140">
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0404" android:layout_width="-1" android:layout_height="@7F070356" app:layout_constraintBottom_toBottomOf="@7F0A041F"/>
+    <ConstraintOverride android:id="@7F0A00EA" android:layout_marginBottom="16776716.000000dip"/>
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0405" android:visibility="0"/>
+    <ConstraintOverride android:id="@7F0A05C4" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C1" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C5" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C2" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C6" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C3" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A068F" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0690" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toEndOf="0"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="152.000000dip" android:layout_height="-2" android:alpha="0.000000" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048A" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="2.000000dip" android:alpha="0.000000" app:layout_constraintBottom_toBottomOf="@7F0A0405" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0179" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toEndOf="@7F0A0732"/>
+    <Constraint android:id="@7F0A0178" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="1.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <Constraint android:id="@7F0A0733" android:layout_width="152.000000dip" android:layout_height="-2" android:alpha="1.000000" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068F" app:layout_constraintStart_toEndOf="@7F0A0178" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A00B8">
+    <Constraint android:id="@7F0A0404" android:layout_width="-1" android:layout_height="@7F070356" app:layout_constraintBottom_toBottomOf="@7F0A041F"/>
+    <ConstraintOverride android:id="@7F0A00EA" android:layout_marginBottom="16776716.000000dip"/>
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <ConstraintOverride android:id="@7F0A06BF" android:visibility="0" android:alpha="1.000000" android:translationY="0.000000dip"/>
+    <ConstraintOverride android:id="@7F0A06C0" android:visibility="0" android:alpha="0.000000" android:translationY="@7F070356"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <ConstraintOverride android:id="@7F0A05C4" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A05C1" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0732" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A068E" android:visibility="1" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0405" android:visibility="0"/>
+  </ConstraintSet>
+  <ConstraintSet android:id="@7F0A0465">
+    <Constraint android:id="@7F0A0404" android:layout_width="-1" android:layout_height="@7F070356" app:layout_constraintBottom_toBottomOf="@7F0A041F"/>
+    <ConstraintOverride android:id="@7F0A00EA" android:layout_marginBottom="16776716.000000dip"/>
+    <ConstraintOverride android:id="@7F0A0078" android:visibility="2" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0177" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="16.000000dip" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toStartOf="0"/>
+    <ConstraintOverride android:id="@7F0A05C5" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C2" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C6" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A05C3" android:visibility="1"/>
+    <ConstraintOverride android:id="@7F0A0733" android:visibility="0" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A068F" android:alpha="0.000000" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0734" android:visibility="0" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A0690" android:alpha="0.000000" app:visibilityMode="1"/>
+    <Constraint android:id="@7F0A0178" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginEnd="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintEnd_toStartOf="@7F0A0733"/>
+    <Constraint android:id="@7F0A0179" android:layout_width="64.000000dip" android:layout_height="64.000000dip" android:layout_marginBottom="8.000000dip" android:alpha="0.000000" android:scaleX="1.000000" android:scaleY="1.000000" android:layout_marginStart="@7F07048A" app:layout_constraintBottom_toBottomOf="0" app:layout_constraintStart_toEndOf="0"/>
+    <Constraint android:id="@7F0A05C4" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A0732" app:layout_constraintEnd_toEndOf="@7F0A0201" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A0732" app:lp_useLineSpacingExtra="false"/>
+    <Constraint android:id="@7F0A05C1" android:visibility="1" android:layout_width="0.000000dip" android:layout_height="0.000000dip" android:alpha="0.000000" android:scaleX="0.500000" android:scaleY="0.500000" app:layout_constraintBottom_toBottomOf="@7F0A068E" app:layout_constraintEnd_toStartOf="@7F0A0058" app:layout_constraintStart_toStartOf="@7F0A05F6" app:layout_constraintTop_toTopOf="@7F0A068E" app:lp_useLineSpacingExtra="false"/>
+    <ConstraintOverride android:id="@7F0A0058" android:visibility="1" android:alpha="0.000000"/>
+    <ConstraintOverride android:id="@7F0A004C" android:visibility="1" android:alpha="0.000000"/>
+    <Constraint android:id="@7F0A0732" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginStart="@7F07048A" android:layout_marginEnd="@7F07048B" app:layout_constraintBottom_toTopOf="@7F0A068E" app:layout_constraintStart_toEndOf="@7F0A0177" app:layout_constraintTop_toTopOf="@7F0A0405" app:layout_constraintVertical_chainStyle="2"/>
+    <Constraint android:id="@7F0A068E" android:layout_width="0.000000dip" android:layout_height="-2" android:layout_marginTop="2.000000dip" app:layout_constraintBottom_toBottomOf="@7F0A0405" app:layout_constraintEnd_toEndOf="@7F0A0732" app:layout_constraintStart_toStartOf="@7F0A0732" app:layout_constraintTop_toBottomOf="@7F0A0732" app:visibilityMode="1"/>
+    <ConstraintOverride android:id="@7F0A0405" android:visibility="1"/>
+  </ConstraintSet>
+</MotionScene>

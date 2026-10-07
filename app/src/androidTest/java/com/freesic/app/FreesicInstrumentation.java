@@ -17,8 +17,9 @@ import java.util.concurrent.atomic.*;
 @androidx.media3.common.util.UnstableApi
 public final class FreesicInstrumentation extends Instrumentation {
     private boolean artworkOnly;
+    private boolean iconOnly;
     private final List<String> passed=new ArrayList<>();
-    @Override public void onCreate(Bundle args){super.onCreate(args);artworkOnly=args!=null&&args.getString("artwork", "false").equals("true");start();}
+    @Override public void onCreate(Bundle args){super.onCreate(args);iconOnly=args!=null&&args.getString("icons", "false").equals("true");artworkOnly=args!=null&&args.getString("artwork", "false").equals("true");start();}
     private void check(boolean value,String message){if(!value)throw new AssertionError(message);passed.add(message);}
     private void waitFor(java.util.function.BooleanSupplier condition,long timeout)throws Exception {long until=System.currentTimeMillis()+timeout;while(System.currentTimeMillis()<until){if(condition.getAsBoolean())return;Thread.sleep(150);}throw new AssertionError("Timeout waiting for state");}
     private boolean mainCondition(java.util.function.BooleanSupplier condition){AtomicBoolean result=new AtomicBoolean();runOnMainSync(()->result.set(condition.getAsBoolean()));return result.get();}
@@ -34,7 +35,8 @@ public final class FreesicInstrumentation extends Instrumentation {
         check(!Artwork.soRock("SO ROCK 2 remix Major RD"),"known-cover matcher excludes remixes");
         Track absent=new Track("content://com.freesic.missing/no-art","Unidentified recording","Unknown","","","",0,0,false);
         check(Artwork.request(c,absent).get(10,java.util.concurrent.TimeUnit.SECONDS)==null,"unknown missing artwork stays absent instead of inventing an album cover");
-        Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));waitFor(()->PlaybackService.active!=null,10000);
+        Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));passed.addAll(GestureChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
+        waitFor(()->PlaybackService.active!=null,10000);
         runOnMainSync(()->{PlaybackService.active.player.setMediaItem(real.item());PlaybackService.active.player.prepare();PlaybackService.active.player.play();});
         waitFor(()->mainCondition(()->PlaybackService.active.player.isPlaying()),15000);
         waitFor(()->mainCondition(()->PlaybackService.active.player.getCurrentMediaItem().mediaMetadata.artworkData!=null),10000);
@@ -59,8 +61,8 @@ public final class FreesicInstrumentation extends Instrumentation {
         for(int i=0;i<samples;i++)b.putShort((short)(Math.sin(i*2*Math.PI*hz/44100)*1500));try(OutputStream out=c.getContentResolver().openOutputStream(uri)){out.write(b.array());}
         values.clear();values.put(MediaStore.Audio.Media.IS_PENDING,0);c.getContentResolver().update(uri,values,null,null);return uri;
     }
-    @Override public void onStart(){if(artworkOnly){artworkChecks();return;}Bundle report=new Bundle();try{
-        Context c=getTargetContext();new Store(c).prefs.edit().clear().commit();c.getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,"relative_path = ?",new String[]{"Music/Freesic QA/"});Uri one=fixture("Aurora Teste",261.63),two=fixture("Maré calma",329.63);
+    @Override public void onStart(){if(iconOnly){new IconChecks().run(this);return;}if(artworkOnly){artworkChecks();return;}Bundle report=new Bundle();try{
+        Context c=getTargetContext();passed.addAll(ArtworkPipelineChecks.run(c));new Store(c).prefs.edit().clear().commit();c.getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,"relative_path = ?",new String[]{"Music/Freesic QA/"});Uri one=fixture("Aurora Teste",261.63),two=fixture("Maré calma",329.63);
         Store store=new Store(c);Track a=new Track(one.toString(),"Aurora Teste","Freesic · teste local","Sons de teste","Music/Freesic QA/","",20000,0,false),b=new Track(two.toString(),"Maré calma","Freesic · teste local","Sons de teste","Music/Freesic QA/","",20000,0,false);
         store.createPlaylist("Minha seleção");store.addToPlaylist("Minha seleção",a);store.addToPlaylist("Minha seleção",b);store.addToPlaylist("Minha seleção",a);
         check(store.playlist("Minha seleção").size()==2,"playlist deduplicates items");store.favorite(a.uri);String backup=store.backup();store.restore(backup);check(store.playlist("Minha seleção").size()==2,"backup merge preserves order without duplication");
@@ -68,6 +70,7 @@ public final class FreesicInstrumentation extends Instrumentation {
         check(Library.scan(c,store).stream().anyMatch(t->t.uri.equals(a.uri)),"library discovers indexed local audio without file import");
         Thread.sleep(500);List<Track> indexed=Library.scan(c,store);int expectedQueue=(int)indexed.stream().filter(t->!t.video).count();String fixtureTitle=indexed.stream().filter(t->t.uri.equals(a.uri)).findFirst().get().title;
         Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        passed.addAll(GestureChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
         waitFor(()->PlaybackService.active!=null,10000);
         waitFor(()->mainCondition(()->findText(activity.getWindow().getDecorView(),fixtureTitle)!=null),10000);
         Thread.sleep(800);int[] location=new int[2];runOnMainSync(()->{View title=findText(activity.getWindow().getDecorView(),fixtureTitle);title.getLocationOnScreen(location);location[0]+=title.getWidth()/2;location[1]+=title.getHeight()/2;});
@@ -84,9 +87,9 @@ public final class FreesicInstrumentation extends Instrumentation {
         waitFor(()->mainCondition(()->PlaybackService.active.player.isPlaying()),10000);check(mainCondition(()->PlaybackService.active.player.getCurrentMediaItemIndex()==1),"queue changes selected item");
         runOnMainSync(()->{PlaybackService.active.setTimer(5);});check(mainCondition(()->PlaybackService.active.timerRemaining()>290000),"sleep timer configured");runOnMainSync(()->PlaybackService.active.setTimer(0));
         runOnMainSync(()->{store.prefs.edit().putBoolean("eq_enabled",true).apply();PlaybackService.active.applyEffects();});
-        runOnMainSync(()->{if(PlaybackService.active.loudness==null)throw new AssertionError("LoudnessEnhancer unavailable on test device");PlaybackService.active.setGain(300);});
-        check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-954)<1),"300 percent amplification applies 954 millibels to active audio session");
-        runOnMainSync(()->PlaybackService.active.setGain(100));check(mainCondition(()->!PlaybackService.active.loudness.getEnabled()),"normal gain disables amplification");
+        runOnMainSync(()->{if(!PlaybackService.active.setGain(300))throw new AssertionError("LoudnessEnhancer unavailable on test device");});
+        check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-6000)<1),"300 percent preset applies 6000 millibels to active audio session");
+        runOnMainSync(()->PlaybackService.active.setGain(100));check(mainCondition(()->PlaybackService.active.loudness==null),"normal gain disables amplification");
         check(c.checkSelfPermission("android.permission.INTERNET")!=0,"APK has no INTERNET permission");
         runOnMainSync(()->{PlaybackService.active.player.setShuffleModeEnabled(false);PlaybackService.active.player.setPlaybackSpeed(1f);PlaybackService.active.player.seekTo(0,0);PlaybackService.active.player.play();activity.moveTaskToBack(true);});
         Thread.sleep(1200);check(mainCondition(()->PlaybackService.active.player.isPlaying()),"playback continues with activity in background");

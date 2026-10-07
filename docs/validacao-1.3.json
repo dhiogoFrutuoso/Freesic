@@ -1,0 +1,93 @@
+{
+  "version": "1.3.0",
+  "versionCode": 4,
+  "apk": {
+    "file": "Freesic-1.3.0.apk",
+    "bytes": 3612008,
+    "sha256": "615758cb36ff05ee5045be66921c03dc6b35d69415d29aea1a33b38f2d9229af",
+    "minSdk": 26,
+    "targetSdk": 36,
+    "internet_permission": false,
+    "native_libraries": [],
+    "signature_v2_verified": true,
+    "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+    "same_certificate_as_1_2": true
+  },
+  "environment": {
+    "device": "Android 15 / API 35 AOSP ATD emulator",
+    "screen": "1080x2140, density 420",
+    "physical_device_tested": false,
+    "audible_output_disabled": true
+  },
+  "build": {
+    "assembleRelease": "passed",
+    "assembleDebugAndroidTest": "passed",
+    "unit_tests": {
+      "name": "com.freesic.app.MusicLogicTest",
+      "tests": "9",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-07T03:13:51.099Z",
+      "hostname": "DESKTOP-M55KFIU",
+      "time": "0.029"
+    },
+    "lint": {
+      "Warning": 71
+    }
+  },
+  "instrumentation": {
+    "main_checks_passed": 35,
+    "artwork_run_checks_passed": 17,
+    "artwork_run_overlap_with_main": 8,
+    "unique_checks_total": 44,
+    "active_session_target_gain_verified_millibels": 6000
+  },
+  "ui_debug": {
+    "header_hides_on_downward_content_scroll": true,
+    "header_returns_on_reverse_scroll": true,
+    "playlist_picker_list_uses_more_than_half_screen": true,
+    "picker_sort_saved": true,
+    "picker_same_sort_reverses": true,
+    "selection_remains_after_sort": true,
+    "playlist_add_uses_library": true,
+    "player_opens": true,
+    "cover_swipe_next": true,
+    "cover_swipe_previous": true,
+    "drag_down_minimizes": true,
+    "mini_swipe_up_expands": true,
+    "physical_keys_raise_to_300": true,
+    "physical_key_lowers_preset": true,
+    "physical_keys_restore_normal_gain": true
+  },
+  "ui_release_automated": {
+    "release_library_opens": true,
+    "header_hides_Álbuns": true,
+    "header_returns_Álbuns": true,
+    "header_hides_Artistas": true,
+    "header_returns_Artistas": true,
+    "header_hides_Pastas": true,
+    "header_returns_Pastas": true,
+    "release_playlist_preserved": true,
+    "release_player_opens": true
+  },
+  "ui_release_visual": {
+    "custom_volume_panel_after_hardware_key": true,
+    "system_volume_shown_as": "93%",
+    "gain_shown_as": "100%",
+    "evidence": "Freesic-1.3-volume.png"
+  },
+  "test_corrections": [
+    "First artwork run lacked the real-song fixture. After provision to emulator only, all 17 checks passed.",
+    "First volume assertion read SharedPreferences before asynchronous disk persistence. A bounded state wait verified the entire 100/150/200/300/200/150/100 sequence.",
+    "Release volume hierarchy lookup ran after the 3500ms popup timeout. The immediate screenshot was visually inspected and confirms volume and gain controls."
+  ],
+  "limits": [
+    "No acoustic power or loudness measurement on physical hardware.",
+    "No runtime performance benchmark against Lark.",
+    "Lark findings are static DEX/resource evidence; REA server/providers were unavailable.",
+    "Motion uses observed constants but does not reproduce the complete Lark MotionLayout state machine.",
+    "Custom hardware-volume overlay only operates while Freesic handles keys in foreground.",
+    "Lint has warnings; zero errors does not mean zero warnings."
+  ]
+}

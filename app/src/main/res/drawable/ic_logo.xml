@@ -1,3 +1,5 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#0C315B" android:pathData="M39,29 L76,29 L76,40 L51,40 L51,49 L68,49 L68,60 L51,60 L51,72 C51,84 29,87 26,76 C23,66 37,62 39,66 Z" />
-</vector>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive layers include an overscan area: proportional padding remains stable at every size. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/brand_logo"
+    android:inset="16.666667%" />

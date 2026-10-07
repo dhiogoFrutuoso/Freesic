@@ -1,0 +1,49 @@
+{
+  "version": "1.3.1",
+  "versionCode": 5,
+  "apk_sha256": "f83ef528fe3cb26c5f95c4582b34b9911fbdaa5339340aad81f7ff7353563fe2",
+  "apk_bytes": 3406020,
+  "signature_v2": true,
+  "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+  "internet_permission": false,
+  "logo_changes": [
+    "Wave artwork simplified with thicker strokes for small icons.",
+    "Filtered bitmap wrapper with mipmap hint shared by launcher, header, widget and empty-player artwork.",
+    "Adaptive foreground uses proportional 16.666667% inset instead of fixed 18dp."
+  ],
+  "logo_transparency": {
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "opaque_white_pixels": 0
+  },
+  "validation": {
+    "unit_tests_passed": 9,
+    "icon_resource_checks_passed": 10,
+    "android_rendering_dp": [
+      48,
+      72,
+      96
+    ],
+    "inset_checks_px": [
+      48,
+      72,
+      108,
+      216
+    ],
+    "visual_comparison": "images/logo-1.3.1.png",
+    "emulator": "Android 15 API 35",
+    "release_installed_successfully": true,
+    "lint_errors": 0,
+    "lint_warnings": 71,
+    "functional_baseline": "validacao-1.3.json"
+  },
+  "limits": [
+    "Launcher appearance depends on the device mask and theme.",
+    "No physical-device verification performed.",
+    "Functional baseline tests are from 1.3.0; 1.3.1 changes brand resources and version metadata."
+  ]
+}

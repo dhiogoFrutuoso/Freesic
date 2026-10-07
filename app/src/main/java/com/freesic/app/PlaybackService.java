@@ -34,6 +34,10 @@ public final class PlaybackService extends MediaSessionService {
     }};
     @Override public void onCreate(){
         super.onCreate();active=this;store=new Store(this);
+        // The old continuous amplitude scale differs from these louder presets.
+        // Never turn an old saved 300% into the new target without a new choice.
+        if(store.prefs.getInt("gain_profile_version",0)<2)
+            store.prefs.edit().putInt("gain_percent",100).putInt("gain_profile_version",2).apply();
         DataSource.Factory localFactory=()->new LocalSource(this);
         player=new ExoPlayer.Builder(this).setMediaSourceFactory(new DefaultMediaSourceFactory(localFactory))
                 .setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true)
@@ -92,11 +96,36 @@ public final class PlaybackService extends MediaSessionService {
         if(loudness!=null){loudness.release();loudness=null;}
         if(sessionId==C.AUDIO_SESSION_ID_UNSET||sessionId==0)return;
         try{equalizer=new Equalizer(0,sessionId);applyEffects();}catch(RuntimeException ignored){equalizer=null;}
-        try{loudness=new android.media.audiofx.LoudnessEnhancer(sessionId);setGain(store.prefs.getInt("gain_percent",100));}catch(RuntimeException ignored){loudness=null;}
+        setGain(store.prefs.getInt("gain_percent",100));
     }
     public boolean setGain(int value){
-        if(loudness==null)return false;int percent=MusicLogic.clampGain(value);
-        try{loudness.setTargetGain(MusicLogic.gainMillibels(percent));loudness.setEnabled(percent>100);store.prefs.edit().putInt("gain_percent",percent).apply();return true;}catch(RuntimeException e){return false;}
+        int percent=MusicLogic.clampGain(value);
+        try {
+            if(percent==100) {
+                if(loudness!=null) {
+                    if(loudness.setEnabled(false)!=android.media.audiofx.AudioEffect.SUCCESS)throw new IllegalStateException("Effect disable failed");
+                    loudness.release();loudness=null;
+                }
+            } else {
+                if(loudness==null) {
+                    int id=player==null?C.AUDIO_SESSION_ID_UNSET:player.getAudioSessionId();
+                    if(id==C.AUDIO_SESSION_ID_UNSET||id==0){store.prefs.edit().putInt("gain_percent",100).apply();return false;}
+                    loudness=new android.media.audiofx.LoudnessEnhancer(id);
+                }
+                if(!loudness.hasControl())throw new IllegalStateException("Effect control unavailable");
+                int target=MusicLogic.gainMillibels(percent);
+                loudness.setTargetGain(target);
+                if(Math.abs(loudness.getTargetGain()-target)>1f
+                        ||loudness.setEnabled(true)!=android.media.audiofx.AudioEffect.SUCCESS
+                        ||!loudness.getEnabled())throw new IllegalStateException("Effect target unavailable");
+            }
+            store.prefs.edit().putInt("gain_percent",percent).apply();return true;
+        } catch(RuntimeException e) {
+            // A device without this effect must report failure instead of fake success.
+            if(loudness!=null){try{loudness.release();}catch(RuntimeException ignored){}loudness=null;}
+            store.prefs.edit().putInt("gain_percent",100).apply();
+            return false;
+        }
     }
     public void applyEffects(){
         if(equalizer==null)return;

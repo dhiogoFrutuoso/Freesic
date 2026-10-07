@@ -2,6 +2,8 @@
 
 # Freesic
 
+<img src="app/src/main/res/drawable-nodpi/brand_logo_source.png" width="88" alt="Logo do Freesic">
+
 ### Sua música. Seu espaço.
 
 Um player Android para a sua coleção local, com interface azul, capas e controles sempre à mão.
@@ -47,7 +49,7 @@ As músicas das capturas servem apenas para demonstração e não acompanham o A
 
 **A música está sem capa?** O Freesic usa imagens incorporadas e capas locais. Em **Opções da música → Escolher capa**, você pode associar uma imagem. Não há busca de capas pela internet.
 
-**O que significa amplificação de 300%?** É ganho de sinal, não uma medida de volume acústico. O resultado depende da saída de áudio e pode distorcer em volumes altos.
+**O que significa amplificação de 300%?** É o nome do preset máximo, que solicita 6.000 mB (+60 dB) ao efeito Android; não significa triplicar a potência acústica. O resultado depende da saída de áudio e pode distorcer em volumes altos.
 
 ## Para desenvolver
 
@@ -56,7 +58,10 @@ Aplicativo nativo em **Java 17**, com **AndroidX Media3**, Gradle Wrapper e SDK 
 | Documentação | Conteúdo |
 | --- | --- |
 | [Desenvolvimento](docs/DESENVOLVIMENTO.md) | Ambiente, comandos, assinatura, arquitetura e origem do projeto. |
-| [Validação da versão 1.2](docs/VALIDACAO.md) | Resultados dos testes, capturas, revisões visuais e limitações conhecidas. |
+| [Engenharia da versão 1.3](docs/ENGENHARIA-1.3.md) | Presets comprovados no Lark, cache de capas, gestos e limites da reconstrução. |
+| [Correção da logo — 1.3.1](docs/validacao-1.3.1.json) | Renderização Android em diferentes tamanhos e integridade do APK. |
+| [Validação da versão 1.3](docs/validacao-1.3.json) | Compilação, assinatura, testes e limites da cobertura. |
+| [Validação histórica da versão 1.2](docs/VALIDACAO.md) | Resultados dos testes, capturas, revisões visuais e limitações conhecidas. |
 | [Créditos e licenças](THIRD_PARTY_NOTICES.md) | Fontes, ícones, dependências e arte de terceiros. |
 
 Encontrou um problema? [Abra uma issue](https://github.com/dhiogoFrutuoso/Freesic/issues) com a versão do Android, a versão do Freesic e os passos para reproduzir. Se for relevante, informe o formato do áudio; não é necessário enviar sua biblioteca pessoal.

@@ -14,7 +14,7 @@
         <item name="android:navigationBarColor">#0B1220</item>
     </style>
     <style name="FreesicDialog" parent="android:style/Theme.Material.Dialog.Alert"><item name="android:fontFamily">@font/inter_regular</item><item name="android:colorAccent">#65ADFF</item><item name="android:windowBackground">@drawable/dialog_surface</item><item name="android:colorBackgroundFloating">#14243A</item><item name="android:textColorPrimary">#F4F7FC</item><item name="android:textColorSecondary">#9BAEC8</item></style>
-    <color name="icon_bg">#65ADFF</color>
+    <color name="icon_bg">#0F1728</color>
     <string name="app_name">Freesic</string>
     <string name="widget_description">Sua música a um toque. Abre o Freesic no player.</string>
 </resources>

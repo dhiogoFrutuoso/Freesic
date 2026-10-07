@@ -5,8 +5,19 @@ import java.util.*;
 import java.util.regex.*;
 
 public final class MusicLogic {
-    public static int clampGain(int percent){return Math.max(100,Math.min(300,percent));}
-    public static int gainMillibels(int percent){return (int)Math.round(2000*Math.log10(clampGain(percent)/100.0));}
+    private static final int[] GAIN_PRESETS = {100, 150, 200, 300};
+    private static final int[] GAIN_MILLIBELS = {0, 1000, 3000, 6000};
+    /** Labels and target gains observed in Lark's BasicVolumeAdjustHelper table.
+     * These are loudness presets, not a linear amplitude or acoustic-power ratio. */
+    public static int gainPresetIndex(int percent) {
+        int nearest=0;
+        for(int i=1;i<GAIN_PRESETS.length;i++)
+            if(Math.abs((long)percent-GAIN_PRESETS[i]) < Math.abs((long)percent-GAIN_PRESETS[nearest])) nearest=i;
+        return nearest;
+    }
+    public static int gainPresetPercent(int index){return GAIN_PRESETS[Math.max(0,Math.min(3,index))];}
+    public static int clampGain(int percent){return GAIN_PRESETS[gainPresetIndex(percent)];}
+    public static int gainMillibels(int percent){return GAIN_MILLIBELS[gainPresetIndex(percent)];}
     private MusicLogic() {}
     public static String normalize(String s) {
         return Normalizer.normalize(s == null ? "" : s, Normalizer.Form.NFD)

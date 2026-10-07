@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Filtering is required when the fine wave artwork is reduced to launcher/header sizes. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/brand_logo_source"
+    android:gravity="fill"
+    android:filter="true"
+    android:antialias="true"
+    android:mipMap="true" />
