@@ -1,0 +1,51 @@
+{
+  "version": "1.3.4",
+  "versionCode": 8,
+  "apk_sha256": "1e0e0e59f805f33fb953c7a5f39c2dbe4d1727f10e08f6295e3d8f970e17dd6a",
+  "apk_bytes": 3407204,
+  "signature_v2_verified": true,
+  "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+  "gain_presets_millibels": {
+    "100": 0,
+    "150": 1000,
+    "200": 3000,
+    "300": 10000
+  },
+  "maximum_ui_label": "300%",
+  "consent": {
+    "required_above_millibels": 6000,
+    "service_guard": true,
+    "cancellation_preserves_gain": true,
+    "physical_keys_cannot_bypass": true,
+    "stored_after_explicit_confirmation": true
+  },
+  "migration": "Gain profile 5 resets old gain and acknowledgement.",
+  "validation": {
+    "unit_tests_passed": 9,
+    "integration_checks_passed": 45,
+    "active_session_readbacks_millibels": [
+      1000,
+      3000,
+      10000
+    ],
+    "enabled_state_verified": true,
+    "release_ui": {
+      "release_warning": true,
+      "cancel_requires_confirmation_again": true,
+      "explicit_acceptance": true,
+      "maximum_display_capture": "Freesic-1.3.4-volume.png",
+      "gain_reset_after_test": true
+    },
+    "lint_errors": 0,
+    "lint_warnings": 68,
+    "device": "Android 15 API 35 emulator; audio output disabled"
+  },
+  "limits": [
+    "100 dB target is a Freesic extension, not the observed Lark table.",
+    "No acoustic loudness measurement or physical-device verification.",
+    "Higher target can mean more compression/distortion rather than louder output.",
+    "Platform limiters and protections are retained.",
+    "Gain is bounded, not unlimited."
+  ],
+  "android_reference": "https://developer.android.com/reference/android/media/audiofx/LoudnessEnhancer"
+}

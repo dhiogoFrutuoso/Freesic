@@ -94,3 +94,16 @@ Os resultados desta versão ficam em [validacao-1.3.json](validacao-1.3.json). O
 ## Correção visual 1.3.1
 
 A onda da logo foi simplificada com traços mais espessos para reduzir a confusão entre linhas em tamanhos pequenos. O recurso compartilhado usa filtragem e mipmaps; a margem do ícone adaptativo passou de 18 dp fixos para 16,666667% da camada. A arte anterior permanece apenas como fixture do teste, fora do APK de distribuição. [Comparação renderizada no Android](images/logo-1.3.1.png) e [validação da correção](validacao-1.3.1.json).
+
+## Ganho adicional no Freesic 1.3.2
+
+A escala visual continua em 100%, 150%, 200% e 300%. O preset máximo agora solicita **6.600 mB (+66 dB)**; os demais continuam em 0, 1.000 e 3.000 mB. Esse aumento de 6 dB é uma escolha do Freesic solicitada pelo usuário, não um valor encontrado no Lark. A tabela e as evidências anteriores documentam a versão 1.3.0.
+
+Na primeira execução após atualizar, a amplificação volta a 100% para evitar aplicar o novo ganho automaticamente a um valor antigo salvo. Falha, indisponibilidade ou rejeição do alvo pelo Android continua desativando o efeito. A API aplica compressão a sinais que ultrapassam sua faixa; aceitar 6.600 mB não comprova aumento acústico de 6 dB, e pode haver mais distorção. [Referência oficial do LoudnessEnhancer](https://developer.android.com/reference/android/media/audiofx/LoudnessEnhancer).
+
+
+## Modo extremo — Freesic 1.3.4
+
+A pedido do usuário, 300% passa a solicitar **10.000 mB (+100 dB)**. 150% e 200% continuam solicitando 1.000 e 3.000 mB. Esse máximo é uma extensão própria, diferente do Lark. Não representa 100 dB SPL nem uma garantia de aumento acústico. O controle permanece limitado a 300%; não existe ganho numérico ilimitado.
+
+O ganho extremo exige confirmação em uma modal com aviso de distorção e risco ao equipamento e à audição. Cancelar mantém o ganho anterior. Enquanto o aviso estiver aberto, aumentar volume não o contorna; diminuir continua disponível. A camada de reprodução também recusa ganho extremo sem confirmação. O novo perfil começa em 100%, e as verificações de aceitação e controle do efeito Android são preservadas. Não são desativados os limitadores ou proteções da plataforma.

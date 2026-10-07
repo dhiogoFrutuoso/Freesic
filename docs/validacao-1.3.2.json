@@ -1,0 +1,34 @@
+{
+  "version": "1.3.2",
+  "versionCode": 6,
+  "apk_sha256": "4b39807ce4b6a8619a3313909e3c5dcd6236ff32c83611ac5f068fc905816c7f",
+  "apk_bytes": 3406020,
+  "signature_v2_verified": true,
+  "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+  "gain_presets_millibels": {
+    "100": 0,
+    "150": 1000,
+    "200": 3000,
+    "300": 6600
+  },
+  "maximum_ui_label": "300%",
+  "migration": "Gain resets to 100% once when upgrading gain profile below 3.",
+  "validation": {
+    "unit_tests_passed": 9,
+    "integration_checks_passed": 36,
+    "active_session_target_readback_mb": 6600,
+    "enabled_state_verified": true,
+    "previous_profile_migration_tested": true,
+    "release_installed": true,
+    "release_maximum_label_visually_checked": true,
+    "lint_errors": 0,
+    "lint_warnings": 71,
+    "device": "Android 15 API 35 emulator; audio output disabled"
+  },
+  "limits": [
+    "66 dB is a Freesic customization, not a value observed in Lark.",
+    "No acoustic loudness measurement or physical-device verification.",
+    "Higher target gain may cause more compression/distortion without louder output."
+  ],
+  "android_reference": "https://developer.android.com/reference/android/media/audiofx/LoudnessEnhancer"
+}

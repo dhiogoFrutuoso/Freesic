@@ -6,8 +6,8 @@ import java.util.regex.*;
 
 public final class MusicLogic {
     private static final int[] GAIN_PRESETS = {100, 150, 200, 300};
-    private static final int[] GAIN_MILLIBELS = {0, 1000, 3000, 6000};
-    /** Labels and target gains observed in Lark's BasicVolumeAdjustHelper table.
+    private static final int[] GAIN_MILLIBELS = {0, 1000, 3000, 10000};
+    /** Lower gains follow Lark; 300% is a Freesic extreme preset requiring explicit confirmation.
      * These are loudness presets, not a linear amplitude or acoustic-power ratio. */
     public static int gainPresetIndex(int percent) {
         int nearest=0;

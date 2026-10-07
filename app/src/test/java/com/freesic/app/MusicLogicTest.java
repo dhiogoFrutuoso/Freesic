@@ -9,11 +9,11 @@ public class MusicLogicTest {
     @Test public void lyricBoundaryBeforeFirstAndExact(){List<MusicLogic.LyricLine> l=MusicLogic.lyrics("[00:02]A\n[00:03]B");assertEquals(-1,MusicLogic.lyricIndex(l,1999));assertEquals(0,MusicLogic.lyricIndex(l,2000));assertEquals(1,MusicLogic.lyricIndex(l,9999));}
     @Test public void malformedLyricsRemainSafe(){assertTrue(MusicLogic.lyrics("plain lyrics\n[00:99]bad\n[999999999999999999999:01]bad").isEmpty());assertEquals(0,MusicLogic.lyrics("[offset:-5000]\n[00:01]A").get(0).ms);}
     @Test public void timeSupportsLongAudio(){assertEquals("0:00",MusicLogic.time(-5));assertEquals("2:05",MusicLogic.time(125000));assertEquals("1:01:01",MusicLogic.time(3661000));}
-    @Test public void amplificationMatchesObservedLarkPresets(){
+    @Test public void amplificationUsesConfirmedExtremeMaximum(){
         assertEquals(0,MusicLogic.gainMillibels(100));
         assertEquals(1000,MusicLogic.gainMillibels(150));
         assertEquals(3000,MusicLogic.gainMillibels(200));
-        assertEquals(6000,MusicLogic.gainMillibels(300));
+        assertEquals(10000,MusicLogic.gainMillibels(300));
     }
     @Test public void amplificationClampsAndSnapsWithoutIntegerOverflow(){
         assertEquals(100,MusicLogic.clampGain(Integer.MIN_VALUE));

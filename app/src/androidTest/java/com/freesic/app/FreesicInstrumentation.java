@@ -69,7 +69,10 @@ public final class FreesicInstrumentation extends Instrumentation {
         store.lyric(a.uri,"[00:00.00]Sua música. Seu espaço.\n[00:04.00]Livre para ouvir.\n[00:08.00]Tudo no seu aparelho.");
         check(Library.scan(c,store).stream().anyMatch(t->t.uri.equals(a.uri)),"library discovers indexed local audio without file import");
         Thread.sleep(500);List<Track> indexed=Library.scan(c,store);int expectedQueue=(int)indexed.stream().filter(t->!t.video).count();String fixtureTitle=indexed.stream().filter(t->t.uri.equals(a.uri)).findFirst().get().title;
+        store.prefs.edit().putInt("gain_profile_version",4).putInt("gain_percent",300).commit();
         Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        waitFor(()->PlaybackService.active!=null,10000);
+        check(store.prefs.getInt("gain_profile_version",0)==5 && store.prefs.getInt("gain_percent",0)==100,"upgrading previous 300 percent requires a new gain selection");
         passed.addAll(GestureChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
         waitFor(()->PlaybackService.active!=null,10000);
         waitFor(()->mainCondition(()->findText(activity.getWindow().getDecorView(),fixtureTitle)!=null),10000);
@@ -87,8 +90,11 @@ public final class FreesicInstrumentation extends Instrumentation {
         waitFor(()->mainCondition(()->PlaybackService.active.player.isPlaying()),10000);check(mainCondition(()->PlaybackService.active.player.getCurrentMediaItemIndex()==1),"queue changes selected item");
         runOnMainSync(()->{PlaybackService.active.setTimer(5);});check(mainCondition(()->PlaybackService.active.timerRemaining()>290000),"sleep timer configured");runOnMainSync(()->PlaybackService.active.setTimer(0));
         runOnMainSync(()->{store.prefs.edit().putBoolean("eq_enabled",true).apply();PlaybackService.active.applyEffects();});
-        runOnMainSync(()->{if(!PlaybackService.active.setGain(300))throw new AssertionError("LoudnessEnhancer unavailable on test device");});
-        check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-6000)<1),"300 percent preset applies 6000 millibels to active audio session");
+        passed.addAll(ExtremeGainChecks.run(this,activity));
+        for(int[] preset:new int[][]{{150,1000},{200,3000},{300,10000}}){
+            runOnMainSync(()->{if(!PlaybackService.active.setGain(preset[0]))throw new AssertionError("LoudnessEnhancer unavailable on test device");});
+            check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-preset[1])<1),preset[0]+" percent preset applies "+preset[1]+" millibels to active audio session");
+        }
         runOnMainSync(()->PlaybackService.active.setGain(100));check(mainCondition(()->PlaybackService.active.loudness==null),"normal gain disables amplification");
         check(c.checkSelfPermission("android.permission.INTERNET")!=0,"APK has no INTERNET permission");
         runOnMainSync(()->{PlaybackService.active.player.setShuffleModeEnabled(false);PlaybackService.active.player.setPlaybackSpeed(1f);PlaybackService.active.player.seekTo(0,0);PlaybackService.active.player.play();activity.moveTaskToBack(true);});

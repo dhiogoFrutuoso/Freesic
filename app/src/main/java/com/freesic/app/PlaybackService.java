@@ -34,10 +34,10 @@ public final class PlaybackService extends MediaSessionService {
     }};
     @Override public void onCreate(){
         super.onCreate();active=this;store=new Store(this);
-        // The old continuous amplitude scale differs from these louder presets.
+        // Profile 5 introduces an explicit opt-in for the extreme target.
         // Never turn an old saved 300% into the new target without a new choice.
-        if(store.prefs.getInt("gain_profile_version",0)<2)
-            store.prefs.edit().putInt("gain_percent",100).putInt("gain_profile_version",2).apply();
+        if(store.prefs.getInt("gain_profile_version",0)<5)
+            store.prefs.edit().putInt("gain_percent",100).putInt("gain_profile_version",5).remove("extreme_gain_ack_v1").apply();
         DataSource.Factory localFactory=()->new LocalSource(this);
         player=new ExoPlayer.Builder(this).setMediaSourceFactory(new DefaultMediaSourceFactory(localFactory))
                 .setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true)
@@ -100,6 +100,7 @@ public final class PlaybackService extends MediaSessionService {
     }
     public boolean setGain(int value){
         int percent=MusicLogic.clampGain(value);
+        if(MusicLogic.gainMillibels(percent)>6000 && !store.prefs.getBoolean("extreme_gain_ack_v1",false))return false;
         try {
             if(percent==100) {
                 if(loudness!=null) {
