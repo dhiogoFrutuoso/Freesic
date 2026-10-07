@@ -20,8 +20,8 @@ final class PlayerGestureLayout extends ScrollView {
     private final int slop, fling;
     PlayerGestureLayout(Context context,Callbacks callbacks){
         super(context);this.callbacks=callbacks;
-        ViewConfiguration config=ViewConfiguration.get(context);slop=config.getScaledTouchSlop();
-        fling=Math.max(config.getScaledMinimumFlingVelocity(),(int)(600*getResources().getDisplayMetrics().density));
+        ViewConfiguration config=ViewConfiguration.get(context);slop=Math.max(1,Math.round(config.getScaledTouchSlop()*.8f));
+        fling=Math.max(config.getScaledMinimumFlingVelocity(),(int)(480*getResources().getDisplayMetrics().density));
         setFillViewport(true);setVerticalScrollBarEnabled(false);setOverScrollMode(OVER_SCROLL_NEVER);
     }
     void artwork(View view){artwork=view;}
@@ -59,9 +59,9 @@ final class PlayerGestureLayout extends ScrollView {
             boolean cancelled=e.getActionMasked()==MotionEvent.ACTION_CANCEL;float vx=0,vy=0;
             if(velocity!=null){velocity.computeCurrentVelocity(1000);vx=velocity.getXVelocity();vy=velocity.getYVelocity();}
             if(axis==1&&artwork!=null){
-                boolean switched=!cancelled&&(Math.abs(dx)>artwork.getWidth()*.5f||(Math.abs(vx)>fling&&Math.abs(dx)>slop*2))&&callbacks.next(dx<0?1:-1);
+                boolean switched=!cancelled&&(Math.abs(dx)>artwork.getWidth()*.4f||(Math.abs(vx)>fling&&Math.abs(dx)>slop*2))&&callbacks.next(dx<0?1:-1);
                 if(!switched)moveCovers(0,true);
-            }else if(!cancelled&&(startTranslation+dy>getHeight()*.5f||(vy>fling&&dy>slop*2)))callbacks.minimize();
+            }else if(!cancelled&&(startTranslation+dy>getHeight()*.4f||(vy>fling&&dy>slop*2)))callbacks.minimize();
             else animate().translationY(0).setDuration(MotionCurves.duration(400)).setInterpolator(MotionCurves.CLOSE).start();
             axis=0;releaseVelocity();return true;
         }

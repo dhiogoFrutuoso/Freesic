@@ -13,7 +13,7 @@ public class MusicLogicTest {
         assertEquals(0,MusicLogic.gainMillibels(100));
         assertEquals(1000,MusicLogic.gainMillibels(150));
         assertEquals(3000,MusicLogic.gainMillibels(200));
-        assertEquals(10000,MusicLogic.gainMillibels(300));
+        assertEquals(8800,MusicLogic.gainMillibels(300));
     }
     @Test public void amplificationClampsAndSnapsWithoutIntegerOverflow(){
         assertEquals(100,MusicLogic.clampGain(Integer.MIN_VALUE));

@@ -107,3 +107,16 @@ Na primeira execução após atualizar, a amplificação volta a 100% para evita
 A pedido do usuário, 300% passa a solicitar **10.000 mB (+100 dB)**. 150% e 200% continuam solicitando 1.000 e 3.000 mB. Esse máximo é uma extensão própria, diferente do Lark. Não representa 100 dB SPL nem uma garantia de aumento acústico. O controle permanece limitado a 300%; não existe ganho numérico ilimitado.
 
 O ganho extremo exige confirmação em uma modal com aviso de distorção e risco ao equipamento e à audição. Cancelar mantém o ganho anterior. Enquanto o aviso estiver aberto, aumentar volume não o contorna; diminuir continua disponível. A camada de reprodução também recusa ganho extremo sem confirmação. O novo perfil começa em 100%, e as verificações de aceitação e controle do efeito Android são preservadas. Não são desativados os limitadores ou proteções da plataforma.
+
+## Barras e ganho máximo — Freesic 1.3.5
+
+O preset máximo foi reduzido para 8.800 mB (+88 dB), mantendo a confirmação e a escala até 300%. As barras reservam espaço para o raio completo do controle nas duas extremidades, sem o padding assimétrico anterior. A área de toque da progressão passou a 48 dp. O painel rápido fica centralizado e respeita a área visível abaixo da barra de status.
+
+
+## Ajustes da versão 1.3.6
+
+O cabeçalho passa a fazer parte do conteúdo rolável: header nativo do ListView na biblioteca e primeiro bloco do ScrollView em playlists e ajustes. A inversão de direção no meio da lista não o revela. Não há mais interceptação do arrasto nem redimensionamento da área de conteúdo a cada movimento. A biblioteca vazia mantém cabeçalho, busca e ações de acesso no mesmo contêiner.
+
+Os gestos próprios do player exigem 20% menos deslocamento: o início usa 80% do touch slop do Android; a troca de capa e a minimização passam de 50% para 40% da dimensão. O limiar de velocidade passa de 600 para 480 dp/s, respeitando o mínimo da plataforma. O miniplayer inicia em 8 dp (antes 10) e abre após 19,2 dp (antes 24), medindo coordenadas absolutas para a animação não alterar o gesto. A direção predominante, o cancelamento e as curvas de animação são preservados. A rolagem de listas e os sliders continuam com o comportamento nativo, sem acelerar artificialmente os valores.
+
+Inclui os ajustes da 1.3.5: thumbs sem corte nas extremidades, controles de volume alinhados, popup centralizado e preset máximo de 8.800 mB (+88 dB de ganho digital solicitado; não é medição de pressão sonora), com aviso de confirmação.

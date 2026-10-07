@@ -35,7 +35,7 @@ public final class FreesicInstrumentation extends Instrumentation {
         check(!Artwork.soRock("SO ROCK 2 remix Major RD"),"known-cover matcher excludes remixes");
         Track absent=new Track("content://com.freesic.missing/no-art","Unidentified recording","Unknown","","","",0,0,false);
         check(Artwork.request(c,absent).get(10,java.util.concurrent.TimeUnit.SECONDS)==null,"unknown missing artwork stays absent instead of inventing an album cover");
-        Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));passed.addAll(GestureChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
+        Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));passed.addAll(GestureChecks.run(this,activity));passed.addAll(ChromeChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
         waitFor(()->PlaybackService.active!=null,10000);
         runOnMainSync(()->{PlaybackService.active.player.setMediaItem(real.item());PlaybackService.active.player.prepare();PlaybackService.active.player.play();});
         waitFor(()->mainCondition(()->PlaybackService.active.player.isPlaying()),15000);
@@ -73,7 +73,7 @@ public final class FreesicInstrumentation extends Instrumentation {
         Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         waitFor(()->PlaybackService.active!=null,10000);
         check(store.prefs.getInt("gain_profile_version",0)==5 && store.prefs.getInt("gain_percent",0)==100,"upgrading previous 300 percent requires a new gain selection");
-        passed.addAll(GestureChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
+        passed.addAll(GestureChecks.run(this,activity));passed.addAll(ChromeChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
         waitFor(()->PlaybackService.active!=null,10000);
         waitFor(()->mainCondition(()->findText(activity.getWindow().getDecorView(),fixtureTitle)!=null),10000);
         Thread.sleep(800);int[] location=new int[2];runOnMainSync(()->{View title=findText(activity.getWindow().getDecorView(),fixtureTitle);title.getLocationOnScreen(location);location[0]+=title.getWidth()/2;location[1]+=title.getHeight()/2;});
@@ -91,7 +91,7 @@ public final class FreesicInstrumentation extends Instrumentation {
         runOnMainSync(()->{PlaybackService.active.setTimer(5);});check(mainCondition(()->PlaybackService.active.timerRemaining()>290000),"sleep timer configured");runOnMainSync(()->PlaybackService.active.setTimer(0));
         runOnMainSync(()->{store.prefs.edit().putBoolean("eq_enabled",true).apply();PlaybackService.active.applyEffects();});
         passed.addAll(ExtremeGainChecks.run(this,activity));
-        for(int[] preset:new int[][]{{150,1000},{200,3000},{300,10000}}){
+        for(int[] preset:new int[][]{{150,1000},{200,3000},{300,8800}}){
             runOnMainSync(()->{if(!PlaybackService.active.setGain(preset[0]))throw new AssertionError("LoudnessEnhancer unavailable on test device");});
             check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-preset[1])<1),preset[0]+" percent preset applies "+preset[1]+" millibels to active audio session");
         }

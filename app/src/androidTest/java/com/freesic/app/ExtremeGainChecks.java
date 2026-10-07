@@ -41,7 +41,7 @@ final class ExtremeGainChecks {
         test.runOnMainSync(()->accepted.getButton(AlertDialog.BUTTON_POSITIVE).performClick());test.waitForIdleSync();
         check(Boolean.TRUE.equals(result.get())&&store.prefs.getBoolean("extreme_gain_ack_v1",false),"explicit confirmation authorizes extreme target",passed);
         test.runOnMainSync(()->{
-            check(PlaybackService.active.loudness.getEnabled()&&PlaybackService.active.loudness.getTargetGain()==10000,"confirmed extreme target returns 10000 millibels from Android",passed);
+            check(PlaybackService.active.loudness.getEnabled()&&PlaybackService.active.loudness.getTargetGain()==8800,"confirmed extreme target returns 8800 millibels from Android",passed);
             PlaybackService.active.setGain(100);
         });
         return passed;

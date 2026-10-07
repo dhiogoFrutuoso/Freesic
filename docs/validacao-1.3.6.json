@@ -1,0 +1,40 @@
+{
+  "version": "1.3.6",
+  "versionCode": 10,
+  "apk_sha256": "f4cd3ee75582d75a3c2fe87b64cbeef6795cd662d83d84378de08b77c0f5ff34",
+  "apk_bytes": 3406660,
+  "signature_v2_verified": true,
+  "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+  "maximum_target_millibels": 8800,
+  "maximum_ui_label": "300%",
+  "unit_tests_passed": 9,
+  "integration_checks_passed": 53,
+  "lint_errors": 0,
+  "lint_warnings": 67,
+  "gesture_thresholds": {
+    "start_slop_multiplier": 0.8,
+    "artwork_commit_fraction": 0.4,
+    "player_minimize_fraction": 0.4,
+    "fling_dp_per_second": 480,
+    "mini_start_dp": 8,
+    "mini_commit_dp": 19.2
+  },
+  "release_ui_checks": [
+    "Reverse scroll keeps header offscreen until the start of content",
+    "Returning to top restores header",
+    "21dp miniplayer upward drag opens player below former 24dp threshold",
+    "Progress thumb fully visible at start",
+    "Volume sheet sliders have space for whole thumbs"
+  ],
+  "device": "Android 15 API 35 emulator, 1080x2140, density 420",
+  "limits": [
+    "No physical device testing or acoustic volume measurement.",
+    "88 dB is requested digital gain, not dB SPL."
+  ],
+  "changes": [
+    "Use native ListView header and first ScrollView child instead of touch-driven viewport resizing.",
+    "Reduce custom player gesture distances by 20 percent; keep native list and slider movement.",
+    "Use raw coordinates for mini player drag to isolate animated view translation.",
+    "Includes 1.3.5 progress/volume slider geometry, centered quick volume popup and 88 dB cap."
+  ]
+}

@@ -53,7 +53,7 @@ final class GestureChecks {
         long down=SystemClock.uptimeMillis();
         instrumentation.runOnMainSync(()->f.event(down,down,MotionEvent.ACTION_DOWN,fromX,fromY));
         for(int step=1;step<=6;step++){
-            final int current=step;SystemClock.sleep(35);
+            final int current=step;SystemClock.sleep(100);
             instrumentation.runOnMainSync(()->f.event(down,SystemClock.uptimeMillis(),MotionEvent.ACTION_MOVE,fromX+(toX-fromX)*current/6f,fromY+(toY-fromY)*current/6f));
         }
         instrumentation.runOnMainSync(()->f.event(down,SystemClock.uptimeMillis(),cancel?MotionEvent.ACTION_CANCEL:MotionEvent.ACTION_UP,toX,toY));
@@ -80,6 +80,18 @@ final class GestureChecks {
             swipe(instrumentation,f,160,120,160,490,false);
             instrumentation.runOnMainSync(()->require(f.minimized==1,"committed downward gesture must minimize exactly once"));
             passed.add("downward drag minimizes exactly once");
+            instrumentation.runOnMainSync(()->f.player.setTranslationY(0));
+            swipe(instrumentation,f,240,120,96,120,false);
+            instrumentation.runOnMainSync(()->require(f.nextCalls==3,"45 percent artwork drag must commit below the previous 50 percent threshold"));
+            passed.add("slow 45 percent artwork drag commits with reduced threshold");
+            SystemClock.sleep(400);
+            swipe(instrumentation,f,240,120,128,120,false);
+            instrumentation.runOnMainSync(()->require(f.nextCalls==3,"35 percent slow drag must not change track"));
+            passed.add("slow drag below 40 percent settles without changing track");
+            SystemClock.sleep(400);
+            swipe(instrumentation,f,160,120,160,390,false);
+            instrumentation.runOnMainSync(()->require(f.minimized==2,"45 percent player drag must minimize below the previous threshold"));
+            passed.add("slow 45 percent player drag minimizes with reduced threshold");
         }finally{instrumentation.runOnMainSync(f::remove);}
         return passed;
     }
