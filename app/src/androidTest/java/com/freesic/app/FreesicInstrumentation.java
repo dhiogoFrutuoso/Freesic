@@ -55,14 +55,29 @@ public final class FreesicInstrumentation extends Instrumentation {
     }catch(Throwable e){report.putString("stream","FAIL after "+passed.size()+" artwork checks: "+e);finish(Activity.RESULT_CANCELED,report);}}
 
     private Uri fixture(String title,double hz)throws Exception {
-        Context c=getTargetContext();ContentValues values=new ContentValues();values.put(MediaStore.Audio.Media.DISPLAY_NAME,title+".wav");values.put(MediaStore.Audio.Media.TITLE,title);values.put(MediaStore.Audio.Media.ARTIST,"Freesic · teste local");values.put(MediaStore.Audio.Media.ALBUM,"Sons de teste");values.put(MediaStore.Audio.Media.MIME_TYPE,"audio/wav");values.put(MediaStore.Audio.Media.RELATIVE_PATH,"Music/Freesic QA/");values.put(MediaStore.Audio.Media.IS_PENDING,1);
-        Uri uri=c.getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,values);if(uri==null)throw new IOException();
+        Context c=getTargetContext();
         int samples=44100*20;ByteBuffer b=ByteBuffer.allocate(44+samples*2).order(ByteOrder.LITTLE_ENDIAN);b.put("RIFF".getBytes()).putInt(36+samples*2).put("WAVEfmt ".getBytes()).putInt(16).putShort((short)1).putShort((short)1).putInt(44100).putInt(88200).putShort((short)2).putShort((short)16).put("data".getBytes()).putInt(samples*2);
-        for(int i=0;i<samples;i++)b.putShort((short)(Math.sin(i*2*Math.PI*hz/44100)*1500));try(OutputStream out=c.getContentResolver().openOutputStream(uri)){out.write(b.array());}
-        values.clear();values.put(MediaStore.Audio.Media.IS_PENDING,0);c.getContentResolver().update(uri,values,null,null);return uri;
+        for(int i=0;i<samples;i++)b.putShort((short)(Math.sin(i*2*Math.PI*hz/44100)*1500));
+        if(Build.VERSION.SDK_INT>=29){
+            ContentValues values=new ContentValues();values.put(MediaStore.Audio.Media.DISPLAY_NAME,title+".wav");values.put(MediaStore.Audio.Media.TITLE,title);values.put(MediaStore.Audio.Media.ARTIST,"Freesic · teste local");values.put(MediaStore.Audio.Media.ALBUM,"Sons de teste");values.put(MediaStore.Audio.Media.MIME_TYPE,"audio/wav");values.put(MediaStore.Audio.Media.RELATIVE_PATH,"Music/Freesic QA/");values.put(MediaStore.Audio.Media.IS_PENDING,1);
+            Uri uri=c.getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,values);if(uri==null)throw new IOException();
+            try(OutputStream out=c.getContentResolver().openOutputStream(uri)){out.write(b.array());}
+            values.clear();values.put(MediaStore.Audio.Media.IS_PENDING,0);c.getContentResolver().update(uri,values,null,null);return uri;
+        }
+        File dir=new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),"Freesic QA");
+        if(!dir.exists()&&!dir.mkdirs())throw new IOException("Cannot create QA dir");
+        File file=new File(dir,title+".wav");
+        try(OutputStream out=new FileOutputStream(file)){out.write(b.array());}
+        Uri[] scanned=new Uri[1];java.util.concurrent.CountDownLatch latch=new java.util.concurrent.CountDownLatch(1);
+        android.media.MediaScannerConnection.scanFile(c,new String[]{file.getAbsolutePath()},new String[]{"audio/wav"},(p,u)->{scanned[0]=u;latch.countDown();});
+        latch.await(5,java.util.concurrent.TimeUnit.SECONDS);
+        return scanned[0]!=null?scanned[0]:Uri.fromFile(file);
     }
     @Override public void onStart(){if(iconOnly){new IconChecks().run(this);return;}if(artworkOnly){artworkChecks();return;}Bundle report=new Bundle();try{
-        Context c=getTargetContext();passed.addAll(ArtworkPipelineChecks.run(c));new Store(c).prefs.edit().clear().commit();c.getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,"relative_path = ?",new String[]{"Music/Freesic QA/"});Uri one=fixture("Aurora Teste",261.63),two=fixture("Maré calma",329.63);
+        Context c=getTargetContext();passed.addAll(ArtworkPipelineChecks.run(c));new Store(c).prefs.edit().clear().commit();
+        if(Build.VERSION.SDK_INT>=29)c.getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,"relative_path = ?",new String[]{"Music/Freesic QA/"});
+        else c.getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,"_data LIKE ?",new String[]{"%/Music/Freesic QA/%"});
+        Uri one=fixture("Aurora Teste",261.63),two=fixture("Maré calma",329.63);
         Store store=new Store(c);Track a=new Track(one.toString(),"Aurora Teste","Freesic · teste local","Sons de teste","Music/Freesic QA/","",20000,0,false),b=new Track(two.toString(),"Maré calma","Freesic · teste local","Sons de teste","Music/Freesic QA/","",20000,0,false);
         store.createPlaylist("Minha seleção");store.addToPlaylist("Minha seleção",a);store.addToPlaylist("Minha seleção",b);store.addToPlaylist("Minha seleção",a);
         check(store.playlist("Minha seleção").size()==2,"playlist deduplicates items");store.favorite(a.uri);String backup=store.backup();store.restore(backup);check(store.playlist("Minha seleção").size()==2,"backup merge preserves order without duplication");
@@ -72,7 +87,7 @@ public final class FreesicInstrumentation extends Instrumentation {
         store.prefs.edit().putInt("gain_profile_version",4).putInt("gain_percent",300).commit();
         Activity activity=startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         waitFor(()->PlaybackService.active!=null,10000);
-        check(store.prefs.getInt("gain_profile_version",0)==5 && store.prefs.getInt("gain_percent",0)==100,"upgrading previous 300 percent requires a new gain selection");
+        check(store.prefs.getInt("gain_profile_version",0)==6 && store.prefs.getInt("gain_percent",0)==100,"upgrading previous 300 percent requires a new gain selection");
         passed.addAll(GestureChecks.run(this,activity));passed.addAll(ChromeChecks.run(this,activity));passed.addAll(VolumeKeyChecks.run(this,activity));Thread.sleep(3800);
         waitFor(()->PlaybackService.active!=null,10000);
         waitFor(()->mainCondition(()->findText(activity.getWindow().getDecorView(),fixtureTitle)!=null),10000);
@@ -91,12 +106,16 @@ public final class FreesicInstrumentation extends Instrumentation {
         runOnMainSync(()->{PlaybackService.active.setTimer(5);});check(mainCondition(()->PlaybackService.active.timerRemaining()>290000),"sleep timer configured");runOnMainSync(()->PlaybackService.active.setTimer(0));
         runOnMainSync(()->{store.prefs.edit().putBoolean("eq_enabled",true).apply();PlaybackService.active.applyEffects();});
         passed.addAll(ExtremeGainChecks.run(this,activity));
-        for(int[] preset:new int[][]{{150,1000},{200,3000},{300,8800}}){
+        for(int[] preset:new int[][]{{150,1000},{200,4320},{300,7480}}){
             runOnMainSync(()->{if(!PlaybackService.active.setGain(preset[0]))throw new AssertionError("LoudnessEnhancer unavailable on test device");});
             check(mainCondition(()->PlaybackService.active.loudness.getEnabled()&&Math.abs(PlaybackService.active.loudness.getTargetGain()-preset[1])<1),preset[0]+" percent preset applies "+preset[1]+" millibels to active audio session");
         }
         runOnMainSync(()->PlaybackService.active.setGain(100));check(mainCondition(()->PlaybackService.active.loudness==null),"normal gain disables amplification");
-        check(c.checkSelfPermission("android.permission.INTERNET")!=0,"APK has no INTERNET permission");
+        check(c.checkSelfPermission("android.permission.INTERNET")==0,"APK grants INTERNET permission for in-app Download tab");
+        runOnMainSync(()->{PlaybackService.active.player.setRepeatMode(Player.REPEAT_MODE_OFF);PlaybackService.active.player.setShuffleModeEnabled(true);});
+        Thread.sleep(200);
+        check(mainCondition(()->PlaybackService.active.player.getShuffleModeEnabled()&&PlaybackService.active.player.getRepeatMode()==Player.REPEAT_MODE_ALL),"enabling shuffle enforces REPEAT_MODE_ALL continuous loop");
+        check(mainCondition(()->PlaybackService.active.orderedQueueIndices().size()==PlaybackService.active.player.getMediaItemCount()),"orderedQueueIndices covers full playback queue");
         runOnMainSync(()->{PlaybackService.active.player.setShuffleModeEnabled(false);PlaybackService.active.player.setPlaybackSpeed(1f);PlaybackService.active.player.seekTo(0,0);PlaybackService.active.player.play();activity.moveTaskToBack(true);});
         Thread.sleep(1200);check(mainCondition(()->PlaybackService.active.player.isPlaying()),"playback continues with activity in background");
         Thread.sleep(5200);check(!store.tracks("queue").isEmpty(),"queue snapshot persisted");

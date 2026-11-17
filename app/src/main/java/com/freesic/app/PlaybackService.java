@@ -34,10 +34,9 @@ public final class PlaybackService extends MediaSessionService {
     }};
     @Override public void onCreate(){
         super.onCreate();active=this;store=new Store(this);
-        // Profile 5 introduces an explicit opt-in for the extreme target.
-        // Never turn an old saved 300% into the new target without a new choice.
-        if(store.prefs.getInt("gain_profile_version",0)<5)
-            store.prefs.edit().putInt("gain_percent",100).putInt("gain_profile_version",5).remove("extreme_gain_ack_v1").apply();
+        // Profile 6 updates the 200%/300% millibel targets; reset prior choices cleanly.
+        if(store.prefs.getInt("gain_profile_version",0)<6)
+            store.prefs.edit().putInt("gain_percent",100).putInt("gain_profile_version",6).remove("extreme_gain_ack_v1").apply();
         DataSource.Factory localFactory=()->new LocalSource(this);
         player=new ExoPlayer.Builder(this).setMediaSourceFactory(new DefaultMediaSourceFactory(localFactory))
                 .setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true)
@@ -48,6 +47,24 @@ public final class PlaybackService extends MediaSessionService {
                 if(!restoring&&item!=null)store.played(Track.item(item));save();FreesicWidget.update(PlaybackService.this,item);refreshArtwork();
             }
             @Override public void onIsPlayingChanged(boolean playing){save();FreesicWidget.update(PlaybackService.this,player.getCurrentMediaItem());}
+            @Override public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled){
+                if(shuffleModeEnabled&&player.getRepeatMode()==Player.REPEAT_MODE_OFF)player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                save();
+            }
+            @Override public void onRepeatModeChanged(int repeatMode){
+                if(player.getShuffleModeEnabled()&&repeatMode==Player.REPEAT_MODE_OFF){player.setRepeatMode(Player.REPEAT_MODE_ALL);return;}
+                save();
+            }
+            @Override public void onPlaybackStateChanged(int playbackState){
+                if(playbackState==Player.STATE_ENDED&&player.getShuffleModeEnabled()&&player.getMediaItemCount()>0){
+                    if(player.getRepeatMode()==Player.REPEAT_MODE_OFF)player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                    Timeline tl=player.getCurrentTimeline();
+                    int first=tl.isEmpty()?0:tl.getFirstWindowIndex(true);
+                    player.seekToDefaultPosition(first>=0?first:0);
+                    player.prepare();
+                    player.play();
+                }
+            }
             @Override public void onPlayerError(PlaybackException e){store.prefs.edit().putString("last_error","Não foi possível tocar este arquivo. Verifique o acesso ou o formato.").apply();}
         });
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class).putExtra("show_player",true),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
@@ -79,10 +96,37 @@ public final class PlaybackService extends MediaSessionService {
             int index=Math.max(0,Math.min(store.prefs.getInt("queue_index",0),items.size()-1));
             player.setMediaItems(items,index,Math.max(0,store.prefs.getLong("queue_position",0)));
         }
-        player.setRepeatMode(store.prefs.getInt("repeat",Player.REPEAT_MODE_OFF));
-        player.setShuffleModeEnabled(store.prefs.getBoolean("shuffle",false));
+        int repeat=store.prefs.getInt("repeat",Player.REPEAT_MODE_OFF);
+        boolean shuffle=store.prefs.getBoolean("shuffle",false);
+        if(shuffle&&repeat==Player.REPEAT_MODE_OFF){
+            repeat=Player.REPEAT_MODE_ALL;
+            store.prefs.edit().putInt("repeat",repeat).apply();
+        }
+        player.setRepeatMode(repeat);
+        player.setShuffleModeEnabled(shuffle);
         player.setPlaybackSpeed(Math.max(.5f,Math.min(2f,store.prefs.getFloat("speed",1f))));
         restoring=false;handler.postDelayed(pulse,5000);
+    }
+    public List<Integer> orderedQueueIndices(){
+        if(player==null)return Collections.emptyList();
+        int count=player.getMediaItemCount();
+        if(count<=0)return Collections.emptyList();
+        Timeline tl=player.getCurrentTimeline();
+        boolean shuffle=player.getShuffleModeEnabled();
+        List<Integer> order=new ArrayList<>(count);
+        if(!tl.isEmpty()&&tl.getWindowCount()==count){
+            boolean[] seen=new boolean[count];
+            int idx=tl.getFirstWindowIndex(shuffle);
+            while(idx!=C.INDEX_UNSET&&idx>=0&&idx<count&&!seen[idx]&&order.size()<count){
+                seen[idx]=true;
+                order.add(idx);
+                idx=tl.getNextWindowIndex(idx,Player.REPEAT_MODE_OFF,shuffle);
+            }
+            if(order.size()<count)for(int i=0;i<count;i++)if(!seen[i])order.add(i);
+        }else{
+            for(int i=0;i<count;i++)order.add(i);
+        }
+        return order;
     }
     public void forceArtworkRefresh(){artworkPending="";refreshArtwork();}
     public void refreshArtwork(){

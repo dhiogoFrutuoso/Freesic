@@ -20,7 +20,7 @@ final class ExtremeGainChecks {
             store.prefs.edit().remove("extreme_gain_ack_v1").commit();
             if(!PlaybackService.active.setGain(200))throw new AssertionError("Base effect unavailable");
             check(!PlaybackService.active.setGain(300),"extreme target rejected by service without consent",passed);
-            check(store.prefs.getInt("gain_percent",0)==200 && PlaybackService.active.loudness.getTargetGain()==3000,"rejected extreme request preserves previous gain",passed);
+            check(store.prefs.getInt("gain_percent",0)==200 && PlaybackService.active.loudness.getTargetGain()==4320,"rejected extreme request preserves previous gain",passed);
             try{request.invoke(activity,300,(Consumer<Boolean>)result::set);}catch(Exception e){throw new RuntimeException(e);}
         });
         test.waitForIdleSync();
@@ -29,7 +29,7 @@ final class ExtremeGainChecks {
         test.runOnMainSync(()->{
             dialog.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_VOLUME_UP));
             dialog.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,KeyEvent.KEYCODE_VOLUME_UP));
-            check(PlaybackService.active.loudness.getTargetGain()==3000,"physical volume up cannot bypass pending warning",passed);
+            check(PlaybackService.active.loudness.getTargetGain()==4320,"physical volume up cannot bypass pending warning",passed);
         });
         Thread.sleep(350);
         Bitmap screen=test.getUiAutomation().takeScreenshot();
@@ -41,7 +41,7 @@ final class ExtremeGainChecks {
         test.runOnMainSync(()->accepted.getButton(AlertDialog.BUTTON_POSITIVE).performClick());test.waitForIdleSync();
         check(Boolean.TRUE.equals(result.get())&&store.prefs.getBoolean("extreme_gain_ack_v1",false),"explicit confirmation authorizes extreme target",passed);
         test.runOnMainSync(()->{
-            check(PlaybackService.active.loudness.getEnabled()&&PlaybackService.active.loudness.getTargetGain()==8800,"confirmed extreme target returns 8800 millibels from Android",passed);
+            check(PlaybackService.active.loudness.getEnabled()&&PlaybackService.active.loudness.getTargetGain()==7480,"confirmed extreme target returns 7480 millibels from Android",passed);
             PlaybackService.active.setGain(100);
         });
         return passed;

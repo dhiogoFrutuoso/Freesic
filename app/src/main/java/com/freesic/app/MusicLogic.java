@@ -6,7 +6,7 @@ import java.util.regex.*;
 
 public final class MusicLogic {
     private static final int[] GAIN_PRESETS = {100, 150, 200, 300};
-    private static final int[] GAIN_MILLIBELS = {0, 1000, 3000, 8800};
+    private static final int[] GAIN_MILLIBELS = {0, 1000, 4320, 7480};
     /** Lower gains follow Lark; 300% is a Freesic extreme preset requiring explicit confirmation.
      * These are loudness presets, not a linear amplitude or acoustic-power ratio. */
     public static int gainPresetIndex(int percent) {
@@ -25,6 +25,41 @@ public final class MusicLogic {
     }
     public static boolean localUri(String uri) {
         return uri != null && (uri.startsWith("content://") || uri.startsWith("file://"));
+    }
+    public static boolean isYouTubeUrl(String input) {
+        if (input == null) return false;
+        String s = input.trim();
+        if (s.isEmpty() || s.matches(".*\\s+.*")) return false;
+        String lower = s.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("https://")) s = s.substring(8);
+        else if (lower.startsWith("http://")) s = s.substring(7);
+        else if (lower.contains("://")) return false;
+        int end = s.length();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '/' || c == '?' || c == '#' || c == ':') { end = i; break; }
+        }
+        String host = s.substring(0, end).toLowerCase(Locale.ROOT);
+        if (!host.equals("youtu.be") && !host.equals("youtube.com") && !host.endsWith(".youtube.com")) return false;
+        String rest = s.substring(end);
+        return !rest.isEmpty() && !rest.equals("/");
+    }
+    public static String normalizeYouTubeUrl(String input) {
+        if (!isYouTubeUrl(input)) return "";
+        String s = input.trim();
+        String lower = s.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("http://")) return "https://" + s.substring(7);
+        if (lower.startsWith("https://")) return s;
+        return "https://" + s;
+    }
+    public static String sanitizeFilename(String name) {
+        if (name == null) return "Freesic_audio";
+        String clean = name.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]+", " ").replaceAll("\\s+", " ").trim();
+        while (clean.startsWith(".")) clean = clean.substring(1).trim();
+        while (clean.endsWith(".")) clean = clean.substring(0, clean.length() - 1).trim();
+        if (clean.length() > 100) clean = clean.substring(0, 100).trim();
+        while (clean.endsWith(".")) clean = clean.substring(0, clean.length() - 1).trim();
+        return clean.isEmpty() ? "Freesic_audio" : clean;
     }
     public static String time(long ms) {
         long seconds = Math.max(0, ms / 1000);

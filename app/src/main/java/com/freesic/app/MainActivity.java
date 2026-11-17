@@ -3,6 +3,7 @@ package com.freesic.app;
 import android.Manifest;
 import android.app.*;
 import android.content.*;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.*;
 import android.text.*;
 import android.view.*;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import androidx.media3.common.*;
@@ -30,10 +32,30 @@ import java.util.concurrent.*;
 public final class MainActivity extends ComponentActivity {
     private static final int BG=0xff0D1929,CARD=0xff162238,INK=0xffF4F7FC,MUTED=0xff9BAEC8,BLUE=0xff59A8FA;
     private final ExecutorService io=Executors.newSingleThreadExecutor();
+    private final ExecutorService searchExecutor=Executors.newSingleThreadExecutor();
+    private final ExecutorService downloadExecutor=Executors.newSingleThreadExecutor();
+    private final ExecutorService thumbExecutor=Executors.newFixedThreadPool(2);
     private final Handler handler=new Handler(Looper.getMainLooper());
     private Store store;private List<Track> library=new ArrayList<>(),shown=new ArrayList<>();
     private final List<String> groups=new ArrayList<>();
     private String section="Biblioteca",category="Músicas",group=null,query="",pendingLyrics="",pendingOpen="";
+    private static final class DownloadItem {
+        final YouTubeAudio.VideoInfo info;
+        final YouTubeAudio.AudioOption option;
+        DownloadItem(YouTubeAudio.VideoInfo info,YouTubeAudio.AudioOption option){this.info=info;this.option=option;}
+    }
+    private String ytQuery="",ytError="",ytDownloadTitle="",ytDownloadFormat="",ytDownloadStatus="";
+    private List<YouTubeAudio.SearchResult> ytResults=new ArrayList<>();
+    private final Deque<DownloadItem> ytDownloadQueue=new ArrayDeque<>();
+    private DownloadItem ytActiveDownload=null;
+    private boolean ytSearching=false,ytDownloading=false,ytDownloadDone=false,ytDownloadFailed=false,ytShowProgressCard=false;
+    private int ytSearchGen=0,ytDownloadProgress=0;
+    private Track ytDownloadedTrack=null;
+    private YouTubeAudio.VideoInfo pendingDownloadInfo=null;
+    private YouTubeAudio.AudioOption pendingDownloadOption=null;
+    private EditText ytInput;private ListView ytList;private BaseAdapter ytAdapter;
+    private LinearLayout ytProgressCard,ytQueueBox;private TextView ytProgressTitle,ytProgressFormat,ytProgressDetail,ytEmptyTitle,ytEmptyHelp;
+    private ProgressBar ytProgressBar;private Button ytPlayNowBtn,ytCloseProgressBtn;
     private boolean loaded=false,scanning=false,started=false,dragging=false;
     private MediaController controller;private ListenableFuture<MediaController> future;
     private LinearLayout root,content,mini,nav,appHeader;
@@ -55,13 +77,13 @@ public final class MainActivity extends ComponentActivity {
     @Override public void onCreate(Bundle state){
         super.onCreate(state);store=new Store(this);
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){public void handleOnBackPressed(){if(group!=null){group=null;render();}else if(!section.equals("Biblioteca")){section="Biblioteca";render();}else{setEnabled(false);getOnBackPressedDispatcher().onBackPressed();setEnabled(true);}}});
-        if(state!=null){section=state.getString("section","Biblioteca");category=state.getString("category","Músicas");group=state.getString("group");pendingLyrics=state.getString("pendingLyrics","");pendingArtwork=state.getString("pendingArtwork","");}
+        if(state!=null){section=state.getString("section","Biblioteca");category=state.getString("category","Músicas");group=state.getString("group");pendingLyrics=state.getString("pendingLyrics","");pendingArtwork=state.getString("pendingArtwork","");ytQuery=state.getString("ytQuery","");}
         getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);build();scan();acceptIntent(getIntent());setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);
         getContentResolver().registerContentObserver(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,true,mediaObserver);
         getContentResolver().registerContentObserver(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,true,mediaObserver);
         if(!Library.permission(this,false)&&!store.prefs.getBoolean("audio_permission_requested",false))handler.postDelayed(()->{if(!isFinishing())requestLibrary();},450);
     }
-    @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putString("section",section);b.putString("category",category);b.putString("group",group);b.putString("pendingLyrics",pendingLyrics);b.putString("pendingArtwork",pendingArtwork);}
+    @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putString("section",section);b.putString("category",category);b.putString("group",group);b.putString("pendingLyrics",pendingLyrics);b.putString("pendingArtwork",pendingArtwork);b.putString("ytQuery",ytQuery);}
     @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);acceptIntent(i);if(i.getBooleanExtra("show_player",false)){i.removeExtra("show_player");showPlayer();}}
     private void acceptIntent(Intent i){if(i!=null&&Intent.ACTION_VIEW.equals(i.getAction())&&i.getData()!=null){Uri uri=i.getData();if(MusicLogic.localUri(uri.toString()))importTrack(uri,true);else toast("Escolha um arquivo de áudio ou vídeo local");}}
     @Override protected void onStart(){super.onStart();started=true;if(loaded)scan();
@@ -76,7 +98,7 @@ public final class MainActivity extends ComponentActivity {
         handler.post(progress);
     }
     @Override protected void onStop(){started=false;handler.removeCallbacks(progress);if(video!=null)video.setPlayer(null);if(future!=null)MediaController.releaseFuture(future);future=null;controller=null;if(quickVolume!=null)quickVolume.dismiss();super.onStop();}
-    @Override protected void onDestroy(){if(gainWarning!=null)gainWarning.dismiss();getContentResolver().unregisterContentObserver(mediaObserver);handler.removeCallbacksAndMessages(null);io.shutdown();super.onDestroy();}
+    @Override protected void onDestroy(){if(gainWarning!=null)gainWarning.dismiss();getContentResolver().unregisterContentObserver(mediaObserver);handler.removeCallbacksAndMessages(null);io.shutdown();searchExecutor.shutdown();downloadExecutor.shutdown();thumbExecutor.shutdown();super.onDestroy();}
     private int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     private TextView text(String value,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(color);t.setTypeface(getResources().getFont(bold?R.font.inter_bold:R.font.inter_regular));t.setIncludeFontPadding(false);return t;}
     private LinearLayout col(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
@@ -95,14 +117,26 @@ public final class MainActivity extends ComponentActivity {
         content=col();content.setPadding(dp(22),0,dp(22),0);root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
         LinearLayout dock=col();dock.setBackgroundColor(0xff15253A);miniProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);miniProgress.setMax(1000);miniProgress.setProgressTintList(ColorStateList.valueOf(BLUE));miniProgress.setProgressBackgroundTintList(ColorStateList.valueOf(0xff263D58));dock.addView(miniProgress,new LinearLayout.LayoutParams(-1,dp(2)));
         mini=row();mini.setPadding(dp(18),dp(7),dp(10),dp(7));mini.setOnClickListener(v->showPlayer());installMiniSwipe(mini);mini.setContentDescription("Abrir player");miniArt=new BrandView(this);mini.addView(miniArt,new LinearLayout.LayoutParams(dp(40),dp(40)));LinearLayout metadata=col();metadata.setPadding(dp(14),0,dp(6),0);miniTitle=text("Escolha uma música",13,INK,false);miniTitle.setSingleLine();miniTitle.setEllipsize(TextUtils.TruncateAt.END);miniSub=text("Sua biblioteca local",11,MUTED,false);miniSub.setSingleLine();metadata.addView(miniTitle);gap(metadata,4);metadata.addView(miniSub);addWeighted(mini,metadata);miniPlay=icon("▶","Reproduzir ou pausar",this::togglePlay);mini.addView(miniPlay,new LinearLayout.LayoutParams(dp(44),dp(44)));mini.addView(icon("up","Abrir player",this::showPlayer),new LinearLayout.LayoutParams(dp(34),dp(44)));dock.addView(mini,new LinearLayout.LayoutParams(-1,dp(56)));root.addView(dock);
-        nav=row();nav.setPadding(dp(10),0,dp(10),0);for(String n:new String[]{"Biblioteca","Playlists","Favoritos","Ajustes"}){Button b=button(n,false,()->{section=n;group=null;query="";hideKeyboard();render();});b.setTextSize(11);b.setPadding(0,dp(8),0,dp(6));android.graphics.drawable.Drawable d=Icons.named(this,n.equals("Biblioteca")?"music":n.equals("Playlists")?"playlist":n.equals("Favoritos")?"heart":"settings");d.setBounds(0,0,dp(23),dp(23));b.setCompoundDrawables(null,d,null,null);b.setCompoundDrawablePadding(dp(5));nav.addView(b,new LinearLayout.LayoutParams(0,dp(64),1));}root.addView(nav);render();
+        nav=row();nav.setPadding(dp(6),0,dp(6),0);
+        for(String n:new String[]{"Biblioteca","Playlists","Favoritos","Baixar","Ajustes"}){
+            Button b=button(n,false,()->{section=n;group=null;query="";hideKeyboard();render();});
+            b.setTextSize(10.5f);b.setSingleLine(true);b.setEllipsize(TextUtils.TruncateAt.END);
+            b.setPadding(dp(2),dp(8),dp(2),dp(6));
+            String iconName=n.equals("Biblioteca")?"music":n.equals("Playlists")?"playlist":n.equals("Favoritos")?"heart":n.equals("Baixar")?"download":"settings";
+            android.graphics.drawable.Drawable d=Icons.named(this,iconName);
+            d.setBounds(0,0,dp(21),dp(21));
+            b.setCompoundDrawables(null,d,null,null);b.setCompoundDrawablePadding(dp(4));
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(64),1));
+        }
+        root.addView(nav);render();
     }
     private void libraryOptions(){new VolumeDialogBuilder(this).setTitle("Biblioteca").setItems(new String[]{"Ordenar músicas","Atualizar biblioteca","Escolher arquivos","Vídeos","Recentes","Ajustes"},(d,w)->{if(w==0)sortDialog();else if(w==1){scan();toast("Biblioteca atualizada");}else if(w==2)pickMedia();else if(w==5){section="Ajustes";group=null;render();}else{section="Biblioteca";group=null;category=w==3?"Vídeos":"Recentes";render();if(w==3&&!Library.permission(this,true))requestLibrary();}}).show();}
     private void heading(String title,String ignored){gap(content,4);TextView h=text(title,38,INK,true);h.setMaxLines(2);content.addView(h);gap(content,10);}
     private void render(){
         content.removeAllViews();list=null;count=null;search=null;
+        ytInput=null;ytList=null;ytAdapter=null;ytProgressCard=null;ytQueueBox=null;ytProgressTitle=null;ytProgressFormat=null;ytProgressDetail=null;ytProgressBar=null;ytPlayNowBtn=null;ytCloseProgressBtn=null;ytEmptyTitle=null;ytEmptyHelp=null;
         for(int i=0;i<nav.getChildCount();i++){Button b=(Button)nav.getChildAt(i);boolean active=b.getText().toString().equals(section);b.setTextColor(active?BLUE:MUTED);b.setBackgroundColor(Color.TRANSPARENT);b.setCompoundDrawableTintList(ColorStateList.valueOf(active?BLUE:MUTED));}
-        if(section.equals("Ajustes")){settings();return;}if(section.equals("Playlists")&&group==null){playlists();return;}
+        if(section.equals("Ajustes")){settings();return;}if(section.equals("Baixar")){downloadTab();return;}if(section.equals("Playlists")&&group==null){playlists();return;}
         if(group!=null){LinearLayout back=row();back.addView(icon("@down","Voltar",()->{group=null;render();}),new LinearLayout.LayoutParams(dp(36),dp(40)));back.addView(text(section.equals("Playlists")?"PLAYLIST":"BIBLIOTECA",11,MUTED,false));content.addView(back);}
         heading(group!=null?group:section.equals("Biblioteca")?(category.equals("Vídeos")?"Vídeos":category.equals("Recentes")?"Recentes":"Biblioteca"):section,"");
         LinearLayout searchBox=row();searchBox.setBackground(bg(0xff1A2A40,18));searchBox.setPadding(dp(16),0,dp(12),0);android.widget.ImageView magnifier=new android.widget.ImageView(this);magnifier.setImageDrawable(Icons.named(this,"search"));magnifier.setImageTintList(ColorStateList.valueOf(MUTED));searchBox.addView(magnifier,new LinearLayout.LayoutParams(dp(20),dp(20)));search=new EditText(this);search.setSingleLine();search.setTextColor(INK);search.setHintTextColor(MUTED);search.setTypeface(getResources().getFont(R.font.inter_regular));search.setTextSize(13);search.setHint("Buscar músicas, artistas, álbuns...");search.setBackgroundColor(Color.TRANSPARENT);search.setPadding(dp(12),0,0,0);search.setText(query);searchBox.addView(search,new LinearLayout.LayoutParams(0,-1,1));content.addView(searchBox,new LinearLayout.LayoutParams(-1,dp(50)));
@@ -153,7 +187,20 @@ public final class MainActivity extends ComponentActivity {
     }
     private void sortDialog(){new VolumeDialogBuilder(this).setTitle("Ordenar por").setSingleChoiceItems(new String[]{"Título","Adicionadas recentemente","Artista","Duração"},store.prefs.getInt("sort",0),(d,w)->{store.prefs.edit().putInt("sort",w).apply();filter();d.dismiss();}).show();}
     private void requestLibrary(){store.prefs.edit().putBoolean("audio_permission_requested",true).apply();ArrayList<String> perms=new ArrayList<>();if(Build.VERSION.SDK_INT>=33){perms.add(Manifest.permission.READ_MEDIA_AUDIO);if(category.equals("Vídeos")){perms.add(Manifest.permission.READ_MEDIA_VIDEO);if(Build.VERSION.SDK_INT>=34)perms.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);}}else perms.add(Manifest.permission.READ_EXTERNAL_STORAGE);requestPermissions(perms.toArray(new String[0]),40);}
-    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==40)scan();}
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){
+        super.onRequestPermissionsResult(request,permissions,results);
+        if(request==40)scan();
+        else if(request==41){
+            YouTubeAudio.VideoInfo info=pendingDownloadInfo;
+            YouTubeAudio.AudioOption option=pendingDownloadOption;
+            pendingDownloadInfo=null;pendingDownloadOption=null;
+            if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED){
+                if(info!=null&&option!=null)startAudioDownload(info,option);
+            }else{
+                toast("Permita o armazenamento para salvar músicas em Music/Freesic.");
+            }
+        }
+    }
     private void scan(){if(isDestroyed())return;if(scanning){scanAgain=true;return;}scanning=true;filter();io.execute(()->{try{List<Track> result=Library.scan(this,store);runOnUiThread(()->{if(isDestroyed())return;library=result;scanning=false;loaded=true;filter();if(scanAgain){scanAgain=false;scan();}});}catch(Exception e){runOnUiThread(()->{scanning=false;filter();toast("Não foi possível ler a biblioteca. Tente escolher os arquivos manualmente.");});}});}
     private void pickMedia(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/*","video/*"}).putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true).addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(i,50);}
     private void importTrack(Uri uri,boolean play){
@@ -183,13 +230,13 @@ public final class MainActivity extends ComponentActivity {
     private void newPlaylist(Track t){EditText input=new EditText(this);input.setSingleLine();input.setHint("Nome da playlist");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(80)});new VolumeDialogBuilder(this).setTitle("Nova playlist").setView(input).setNegativeButton("Cancelar",null).setPositiveButton("Criar",(d,w)->{String n=input.getText().toString().trim();if(n.isEmpty())return;store.createPlaylist(n);if(t!=null)store.addToPlaylist(n,t);if(section.equals("Playlists"))render();toast("Playlist salva");}).show();}
     private void addPlaylist(Track t){List<String> names=store.playlistNames();names.add(0,"+ Criar playlist");new VolumeDialogBuilder(this).setTitle("Adicionar a uma playlist").setItems(names.toArray(new String[0]),(d,w)->{if(w==0)newPlaylist(t);else{store.addToPlaylist(names.get(w),t);toast("Adicionada a "+names.get(w));}}).show();}
     private void settings(){
-        heading("Do seu jeito","Freesic 1.3 · feito para ouvir livre.");ScrollView scroll=new ScrollView(this);LinearLayout items=col();
-        TextView privacy=text("100% no seu aparelho",22,BLUE,true);items.addView(privacy);gap(items,10);items.addView(text("Sem anúncios, login ou rastreamento. O Freesic não tem permissão de internet. Seus arquivos e suas escolhas ficam com você.",14,MUTED,false));gap(items,22);
+        heading("Do seu jeito","Freesic 1.4 · feito para ouvir livre.");ScrollView scroll=new ScrollView(this);LinearLayout items=col();
+        TextView privacy=text("100% no seu aparelho",22,BLUE,true);items.addView(privacy);gap(items,10);items.addView(text("Sem anúncios, login ou rastreamento. Sua biblioteca e reprodução ficam 100% locais no aparelho; a internet é usada apenas na aba Baixar para pesquisar e salvar áudios do YouTube.",14,MUTED,false));gap(items,22);
         for(String label:new String[]{"Atualizar biblioteca","Escolher arquivos","Permissões da biblioteca","Volume e amplificação","Equalizador","Temporizador","Exportar playlists e favoritos","Importar backup","Licenças e sobre"}){
             items.addView(button(label,false,()->{switch(label){case "Atualizar biblioteca":scan();toast("Atualizando a biblioteca");break;case "Escolher arquivos":pickMedia();break;case "Permissões da biblioteca":requestLibrary();break;case "Volume e amplificação":volume();break;case "Equalizador":effects();break;case "Temporizador":timer();break;case "Exportar playlists e favoritos":startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"freesic-backup.json"),52);break;case "Importar backup":startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE),53);break;default:about();}}));gap(items,10);
         }items.addView(text("O backup guarda organização e referências aos arquivos, não as músicas. Em outro aparelho, algumas referências podem precisar ser refeitas.",12,MUTED,false));gap(items,18);scroll.addView(items);content.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));installChrome(scroll,scroll);
     }
-    private void about(){new VolumeDialogBuilder(this).setTitle("Freesic 1.3.0").setMessage("Sua música. Seu espaço.\n\nUm player independente, feito para sua biblioteca local. Sem anúncios, contas ou rastreamento.\n\nCompatibilidade de áudio, vídeo e efeitos depende dos decodificadores do seu aparelho.").setNeutralButton("Licenças",(d,w)->{try(InputStream in=getAssets().open("third_party_notices.txt")){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int n;while((n=in.read(bytes))!=-1)out.write(bytes,0,n);ScrollView s=new ScrollView(this);TextView t=text(out.toString("UTF-8"),12,INK,false);t.setPadding(dp(18),dp(12),dp(18),dp(12));s.addView(t);new VolumeDialogBuilder(this).setTitle("Software de terceiros").setView(s).setPositiveButton("Fechar",null).show();}catch(IOException e){toast("Licenças disponíveis no projeto do Freesic");}}).setPositiveButton("Fechar",null).show();}
+    private void about(){new VolumeDialogBuilder(this).setTitle("Freesic 1.4.0").setMessage("Sua música. Seu espaço.\n\nUm player independente, feito para sua biblioteca local. Sem anúncios, contas ou rastreamento.\n\nCompatibilidade de áudio, vídeo e efeitos depende dos decodificadores do seu aparelho.").setNeutralButton("Licenças",(d,w)->{try(InputStream in=getAssets().open("third_party_notices.txt")){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int n;while((n=in.read(bytes))!=-1)out.write(bytes,0,n);ScrollView s=new ScrollView(this);TextView t=text(out.toString("UTF-8"),12,INK,false);t.setPadding(dp(18),dp(12),dp(18),dp(12));s.addView(t);new VolumeDialogBuilder(this).setTitle("Software de terceiros").setView(s).setPositiveButton("Fechar",null).show();}catch(IOException e){toast("Licenças disponíveis no projeto do Freesic");}}).setPositiveButton("Fechar",null).show();}
     private void showPlayer(){
         if(playerDialog!=null&&playerDialog.isShowing())return;Track t=current();if(t==null){toast("Escolha uma música para abrir o player");return;}
         float height=getResources().getDisplayMetrics().heightPixels/getResources().getDisplayMetrics().density;float rhythm=Math.min(1f,height/816f);int width=getResources().getDisplayMetrics().widthPixels;
@@ -199,7 +246,7 @@ public final class MainActivity extends ComponentActivity {
         LinearLayout titleRow=row();LinearLayout labels=col();playerTitle=text("",27,INK,true);playerTitle.setMaxLines(2);playerTitle.setEllipsize(TextUtils.TruncateAt.END);labels.addView(playerTitle);gap(labels,8);playerArtist=text("",17,MUTED,false);playerArtist.setMaxLines(1);playerArtist.setEllipsize(TextUtils.TruncateAt.END);labels.addView(playerArtist);addWeighted(titleRow,labels);favorite=icon("♡","Alternar favorito",()->{Track now=current();if(now!=null){store.favorite(now.uri);updatePlayback();filter();}});favorite.setBackground(bg(0xff1B2D45,50));titleRow.addView(favorite,new LinearLayout.LayoutParams(dp(50),dp(50)));base.addView(titleRow);gap(base,(int)(20*rhythm));
         seek=new SeekBar(this);seek.setMax(1000);seek.setProgressTintList(ColorStateList.valueOf(BLUE));seek.setProgressBackgroundTintList(ColorStateList.valueOf(0xff36506E));seek.setThumbTintList(ColorStateList.valueOf(BLUE));styleSlider(seek,12,2);seek.setContentDescription("Posição da reprodução");base.addView(seek,new LinearLayout.LayoutParams(-1,dp(48)));seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onStartTrackingTouch(SeekBar s){dragging=true;}public void onProgressChanged(SeekBar s,int p,boolean user){if(user&&controller!=null)label(elapsed,MusicLogic.time(Math.max(0,controller.getDuration())*p/1000));}public void onStopTrackingTouch(SeekBar s){if(controller!=null&&controller.getDuration()>0)controller.seekTo(controller.getDuration()*s.getProgress()/1000);dragging=false;}});
         LinearLayout times=row();elapsed=text("0:00",12,INK,false);total=text("0:00",12,INK,false);addWeighted(times,elapsed);times.addView(total);base.addView(times);gap(base,(int)(22*rhythm));
-        LinearLayout controls=row();shuffle=icon("⇄","Alternar reprodução aleatória",()->{if(controller!=null){controller.setShuffleModeEnabled(!controller.getShuffleModeEnabled());updatePlayback();}});addWeighted(controls,shuffle);addWeighted(controls,icon("❮❮","Faixa anterior",()->skipTrack(-1)));playerPlay=button("▶",true,this::togglePlay);playerPlay.setContentDescription("Reproduzir ou pausar");playerPlay.setBackground(bg(BLUE,100));((Icons)playerPlay).glyphSize=48;controls.addView(playerPlay,new LinearLayout.LayoutParams(dp(84),dp(84)));addWeighted(controls,icon("❯❯","Próxima faixa",()->skipTrack(1)));repeat=icon("↻","Alternar repetição",()->{if(controller!=null){controller.setRepeatMode((controller.getRepeatMode()+1)%3);updatePlayback();}});addWeighted(controls,repeat);float controlShift=Math.min(18f,Math.max(0f,(width/getResources().getDisplayMetrics().density-136f)/8f-14f));for(int k=0;k<controls.getChildCount();k++){View control=controls.getChildAt(k);if(k!=2)control.setTranslationX(dp(k<2?-controlShift:controlShift));if((k==1||k==3)&&control instanceof Icons)((Icons)control).glyphSize=40;}base.addView(controls);gap(base,(int)(36*rhythm));
+        LinearLayout controls=row();shuffle=icon("⇄","Alternar reprodução aleatória",this::toggleShuffleMode);addWeighted(controls,shuffle);addWeighted(controls,icon("❮❮","Faixa anterior",()->skipTrack(-1)));playerPlay=button("▶",true,this::togglePlay);playerPlay.setContentDescription("Reproduzir ou pausar");playerPlay.setBackground(bg(BLUE,100));((Icons)playerPlay).glyphSize=48;controls.addView(playerPlay,new LinearLayout.LayoutParams(dp(84),dp(84)));addWeighted(controls,icon("❯❯","Próxima faixa",()->skipTrack(1)));repeat=icon("↻","Alternar repetição",this::cycleRepeatMode);addWeighted(controls,repeat);float controlShift=Math.min(18f,Math.max(0f,(width/getResources().getDisplayMetrics().density-136f)/8f-14f));for(int k=0;k<controls.getChildCount();k++){View control=controls.getChildAt(k);if(k!=2)control.setTranslationX(dp(k<2?-controlShift:controlShift));if((k==1||k==3)&&control instanceof Icons)((Icons)control).glyphSize=40;}base.addView(controls);gap(base,(int)(36*rhythm));
         playerStatus=text("",12,MUTED,false);playerStatus.setGravity(Gravity.CENTER);base.addView(playerStatus);LinearLayout actions=row();for(String[] a:new String[][]{{"queue","Fila"},{"volume","Volume"},{"lyrics","Letras"}}){Runnable click=a[0].equals("queue")?this::queueDialog:a[0].equals("volume")?this::volume:this::lyricsDialog;actions.addView(action(a[0],a[1],click),new LinearLayout.LayoutParams(0,-2,1));}base.addView(actions);lyricText=text("",17,INK,false);
         playerDialog.setOnDismissListener(d->{if(video!=null)video.setPlayer(null);video=null;cover=null;playerTitle=null;lyricText=null;displayedUri="";visualTrack=null;previousCover=null;nextCover=null;if(trackMotion!=null)trackMotion.cancel();playerMedia=null;playerSurface=null;closingPlayer=false;playerDialog=null;});base.setFocusableInTouchMode(true);playerDialog.show();win.setLayout(-1,-1);displayedUri="";updatePlayback();base.requestFocus();scroll.post(()->{scroll.scrollTo(0,0);scroll.setTranslationY(scroll.getHeight());scroll.animate().translationY(0).setDuration(MotionCurves.duration(600)).setInterpolator(MotionCurves.OPEN).start();});
     }
@@ -232,7 +279,7 @@ public final class MainActivity extends ComponentActivity {
         if(gainWarning!=null&&gainWarning.isShowing()){completion.accept(false);return;}
         if(quickVolume!=null)quickVolume.dismiss();
         gainWarning=new AlertDialog.Builder(this).setTitle("Ativar ganho extremo?")
-            .setMessage("O nível 300% solicita até +88 dB de ganho digital. Isso não é uma medição do volume acústico.\n\nPode causar distorção intensa, danificar o alto-falante e prejudicar sua audição, especialmente com fones. Comece com o volume do aparelho baixo. O Android pode limitar ou recusar o efeito.")
+            .setMessage("O nível 300% solicita até +74,8 dB de ganho digital. Isso não é uma medição do volume acústico.\n\nPode causar distorção intensa, danificar o alto-falante e prejudicar sua audição, especialmente com fones. Comece com o volume do aparelho baixo. O Android pode limitar ou recusar o efeito.")
             .setNegativeButton("Cancelar",(d,w)->completion.accept(false))
             .setPositiveButton("Entendo, ativar",(d,w)->{store.prefs.edit().putBoolean("extreme_gain_ack_v1",true).apply();apply.run();})
             .setOnCancelListener(d->completion.accept(false)).create();
@@ -296,10 +343,55 @@ public final class MainActivity extends ComponentActivity {
         if(playerDialog==null||playerSurface==null||closingPlayer)return;closingPlayer=true;Dialog current=playerDialog;
         playerSurface.animate().translationY(playerSurface.getHeight()).setDuration(MotionCurves.duration(400)).setInterpolator(MotionCurves.CLOSE).withEndAction(current::dismiss).start();
     }
+    private void toggleShuffleMode(){
+        if(controller==null)return;
+        boolean enable=!controller.getShuffleModeEnabled();
+        controller.setShuffleModeEnabled(enable);
+        if(enable&&controller.getRepeatMode()==Player.REPEAT_MODE_OFF)controller.setRepeatMode(Player.REPEAT_MODE_ALL);
+        updatePlayback();
+    }
+    private void cycleRepeatMode(){
+        if(controller==null)return;
+        int next=(controller.getRepeatMode()+1)%3;
+        if(controller.getShuffleModeEnabled()&&next==Player.REPEAT_MODE_OFF)next=Player.REPEAT_MODE_ALL;
+        controller.setRepeatMode(next);
+        updatePlayback();
+    }
     private boolean skipTrack(int direction){
         if(controller==null)return false;
-        if(direction>0&&!controller.hasNextMediaItem()||direction<0&&!controller.hasPreviousMediaItem()){toast(direction>0?"Última música da fila":"Primeira música da fila");return false;}
-        pendingTrackDirection=direction;if(direction>0)controller.seekToNextMediaItem();else controller.seekToPreviousMediaItem();return true;
+        int totalItems=controller.getMediaItemCount();
+        if(totalItems<=0)return false;
+        boolean loopOrShuffle=controller.getShuffleModeEnabled()||controller.getRepeatMode()==Player.REPEAT_MODE_ALL;
+        if(direction>0){
+            if(controller.hasNextMediaItem()){pendingTrackDirection=direction;controller.seekToNextMediaItem();return true;}
+            if(loopOrShuffle){
+                Timeline tl=controller.getCurrentTimeline();
+                boolean shuffleOn=controller.getShuffleModeEnabled();
+                int target=!tl.isEmpty()?tl.getFirstWindowIndex(shuffleOn):0;
+                if(target==C.INDEX_UNSET||target<0||target>=totalItems)target=0;
+                pendingTrackDirection=direction;
+                controller.seekToDefaultPosition(target);
+                controller.prepare();
+                controller.play();
+                return true;
+            }
+            toast("Última música da fila");
+            return false;
+        }
+        if(controller.hasPreviousMediaItem()){pendingTrackDirection=direction;controller.seekToPreviousMediaItem();return true;}
+        if(loopOrShuffle){
+            Timeline tl=controller.getCurrentTimeline();
+            boolean shuffleOn=controller.getShuffleModeEnabled();
+            int target=!tl.isEmpty()?tl.getLastWindowIndex(shuffleOn):totalItems-1;
+            if(target==C.INDEX_UNSET||target<0||target>=totalItems)target=totalItems-1;
+            pendingTrackDirection=direction;
+            controller.seekToDefaultPosition(target);
+            controller.prepare();
+            controller.play();
+            return true;
+        }
+        toast("Primeira música da fila");
+        return false;
     }
     private void prepareNeighborCovers(){
         if(playerMedia==null||controller==null)return;int width=playerMedia.getWidth();
@@ -368,9 +460,783 @@ public final class MainActivity extends ComponentActivity {
         }catch(RuntimeException e){toast("Efeito indisponível nesta sessão");return;}
         ScrollView scroll=new ScrollView(this);scroll.addView(box);new VolumeDialogBuilder(this).setTitle("Seu som").setView(scroll).setNeutralButton("Zerar bandas",(d,w)->{for(int b=0;b<32;b++)store.prefs.edit().putInt("eq_band_"+b,0).apply();service.applyEffects();}).setPositiveButton("Pronto",null).show();
     }
+    private List<Integer> fallbackTimelineOrder(){
+        if(controller==null)return Collections.emptyList();
+        int totalItems=controller.getMediaItemCount();
+        if(totalItems<=0)return Collections.emptyList();
+        Timeline tl=controller.getCurrentTimeline();
+        boolean shuffleOn=controller.getShuffleModeEnabled();
+        List<Integer> order=new ArrayList<>(totalItems);
+        if(!tl.isEmpty()&&tl.getWindowCount()==totalItems){
+            boolean[] seen=new boolean[totalItems];
+            int idx=tl.getFirstWindowIndex(shuffleOn);
+            while(idx!=C.INDEX_UNSET&&idx>=0&&idx<totalItems&&!seen[idx]&&order.size()<totalItems){
+                seen[idx]=true;
+                order.add(idx);
+                idx=tl.getNextWindowIndex(idx,Player.REPEAT_MODE_OFF,shuffleOn);
+            }
+            if(order.size()<totalItems)for(int i=0;i<totalItems;i++)if(!seen[i])order.add(i);
+        }else{
+            for(int i=0;i<totalItems;i++)order.add(i);
+        }
+        return order;
+    }
+    private static final class QueueEntry {
+        final int mediaIndex;final Track track;
+        QueueEntry(int mediaIndex,Track track){this.mediaIndex=mediaIndex;this.track=track;}
+    }
+    private final class QueueRow {
+        LinearLayout row;BrandView art;TextView title,detail;Button more;
+        QueueRow(){
+            row=row();row.setPadding(dp(10),dp(8),dp(4),dp(8));
+            art=new BrandView(MainActivity.this);row.addView(art,new LinearLayout.LayoutParams(dp(48),dp(48)));
+            LinearLayout info=col();info.setPadding(dp(14),0,dp(8),0);
+            title=text("",15,INK,false);title.setTypeface(getResources().getFont(R.font.inter_medium));title.setSingleLine();title.setEllipsize(TextUtils.TruncateAt.END);info.addView(title);
+            gap(info,4);
+            detail=text("",12,MUTED,false);detail.setSingleLine();detail.setEllipsize(TextUtils.TruncateAt.END);info.addView(detail);
+            addWeighted(row,info);
+            more=icon("more","Opções da faixa na fila",()->{});more.setFocusable(false);row.addView(more,new LinearLayout.LayoutParams(dp(44),dp(48)));
+            row.setTag(this);
+        }
+    }
     private void queueDialog(){
-        if(controller==null)return;ArrayList<String> labels=new ArrayList<>();for(int i=0;i<controller.getMediaItemCount();i++)labels.add((i==controller.getCurrentMediaItemIndex()?"▶  ":"")+(i+1)+". "+controller.getMediaItemAt(i).mediaMetadata.title);
-        new VolumeDialogBuilder(this).setTitle("Fila · "+labels.size()+" faixas").setItems(labels.toArray(new String[0]),(d,w)->new VolumeDialogBuilder(this).setTitle(labels.get(w)).setItems(new String[]{"Tocar","Mover para a próxima posição","Remover da fila"},(a,b)->{if(controller==null||w>=controller.getMediaItemCount())return;if(b==0){controller.seekToDefaultPosition(w);controller.prepare();controller.play();}else if(b==1){int target=Math.min(controller.getMediaItemCount()-1,controller.getCurrentMediaItemIndex()+1);controller.moveMediaItem(w,target);}else controller.removeMediaItem(w);}).show()).setPositiveButton("Fechar",null).show();
+        if(controller==null)return;
+        Dialog dialog=new KeyAwareDialog();
+        LinearLayout box=col();
+        box.setPadding(dp(18),dp(12),dp(18),dp(14));
+        GradientDrawable sheet=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff101D30,0xff101D2F});
+        sheet.setCornerRadii(new float[]{dp(22),dp(22),dp(22),dp(22),0,0,0,0});
+        box.setBackground(sheet);
+
+        View handle=new View(this);handle.setBackground(bg(0xff57708F,4));handle.setContentDescription("Fechar fila");handle.setOnClickListener(v->dialog.dismiss());
+        LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(dp(44),dp(4));hp.gravity=Gravity.CENTER_HORIZONTAL;box.addView(handle,hp);
+        gap(box,16);
+
+        LinearLayout head=row();
+        LinearLayout titleCol=col();
+        titleCol.addView(text("Fila de reprodução",22,INK,true));
+        gap(titleCol,3);
+        TextView subtitle=text("",13,MUTED,false);
+        titleCol.addView(subtitle);
+        addWeighted(head,titleCol);
+
+        Button qShuffle=icon("⇄","Alternar reprodução aleatória",()->{});
+        Button qRepeat=icon("↻","Alternar repetição",()->{});
+        Button qClose=icon("down","Fechar fila",dialog::dismiss);
+        ((Icons)qShuffle).glyphSize=20;((Icons)qRepeat).glyphSize=20;((Icons)qClose).glyphSize=20;
+        LinearLayout.LayoutParams modeLp=new LinearLayout.LayoutParams(dp(44),dp(44));modeLp.rightMargin=dp(6);
+        head.addView(qShuffle,modeLp);
+        head.addView(qRepeat,modeLp);
+        head.addView(qClose,new LinearLayout.LayoutParams(dp(44),dp(44)));
+        box.addView(head);
+        gap(box,12);
+        line(box,0xff1D2E45);
+        gap(box,8);
+
+        List<QueueEntry> entries=new ArrayList<>();
+        int[] pendingActive={-1};
+        ListView queueList=new ListView(this);
+        queueList.setDivider(null);
+        queueList.setCacheColorHint(Color.TRANSPARENT);
+        queueList.setVerticalScrollBarEnabled(false);
+        TextView emptyQueue=text("A fila está vazia.",14,MUTED,false);
+        emptyQueue.setGravity(Gravity.CENTER);emptyQueue.setPadding(0,dp(32),0,dp(32));
+        FrameLayout listWrap=new FrameLayout(this);
+        listWrap.addView(queueList,new FrameLayout.LayoutParams(-1,-1));
+        listWrap.addView(emptyQueue,new FrameLayout.LayoutParams(-1,-1));
+        queueList.setEmptyView(emptyQueue);
+        box.addView(listWrap,new LinearLayout.LayoutParams(-1,0,1));
+
+        Runnable[] refreshRef=new Runnable[1];
+        BaseAdapter queueAdapter=new BaseAdapter(){
+            public int getCount(){return entries.size();}
+            public Object getItem(int p){return entries.get(p);}
+            public long getItemId(int p){return entries.get(p).mediaIndex;}
+            public View getView(int position,View reused,ViewGroup parent){
+                QueueRow h=reused!=null&&reused.getTag() instanceof QueueRow?(QueueRow)reused.getTag():new QueueRow();
+                QueueEntry entry=entries.get(position);
+                int activeIdx=pendingActive[0]>=0?pendingActive[0]:(controller==null?-1:controller.getCurrentMediaItemIndex());
+                boolean isActive=entry.mediaIndex==activeIdx;
+                if(isActive){
+                    GradientDrawable activeBg=bg(0xff182C46,14);
+                    activeBg.setStroke(dp(1),0xff2C4D75);
+                    h.row.setBackground(activeBg);
+                }else{
+                    h.row.setBackgroundColor(Color.TRANSPARENT);
+                }
+                h.art.track(entry.track);
+                h.title.setText(entry.track.title);
+                h.title.setTextColor(isActive?BLUE:INK);
+                String baseDetail=entry.track.artist+" · "+MusicLogic.time(entry.track.duration);
+                if(isActive){
+                    String prefix="Tocando agora · ";
+                    SpannableString span=new SpannableString(prefix+baseDetail);
+                    span.setSpan(new android.text.style.ForegroundColorSpan(BLUE),0,prefix.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    h.detail.setText(span);
+                }else{
+                    h.detail.setText(baseDetail);
+                }
+                h.row.setContentDescription((isActive?"Tocando agora: ":"")+entry.track.title+", "+entry.track.artist);
+                h.more.setContentDescription("Opções de "+entry.track.title);
+                h.more.setOnClickListener(v->new VolumeDialogBuilder(MainActivity.this).setTitle(entry.track.title)
+                        .setItems(new String[]{"Mover para a próxima posição","Remover da fila"},(d,w)->{
+                            if(controller==null||entry.mediaIndex<0||entry.mediaIndex>=controller.getMediaItemCount())return;
+                            int countNow=controller.getMediaItemCount();
+                            if(w==0){
+                                int cur=controller.getCurrentMediaItemIndex();
+                                if(entry.mediaIndex==cur){toast("Esta música já está tocando");return;}
+                                int target=cur<0?0:(entry.mediaIndex<cur?cur:Math.min(countNow-1,cur+1));
+                                if(target!=entry.mediaIndex)controller.moveMediaItem(entry.mediaIndex,target);
+                                toast("Movida para tocar em seguida");
+                            }else{
+                                controller.removeMediaItem(entry.mediaIndex);
+                            }
+                            pendingActive[0]=-1;
+                            if(refreshRef[0]!=null)refreshRef[0].run();
+                            updatePlayback();
+                        }).show());
+                h.row.setOnClickListener(v->{
+                    if(controller==null||entry.mediaIndex<0||entry.mediaIndex>=controller.getMediaItemCount())return;
+                    pendingActive[0]=entry.mediaIndex;
+                    pendingTrackDirection=1;
+                    controller.seekToDefaultPosition(entry.mediaIndex);
+                    controller.prepare();
+                    controller.play();
+                    notifyDataSetChanged();
+                    updatePlayback();
+                });
+                return h.row;
+            }
+        };
+        queueList.setAdapter(queueAdapter);
+
+        Runnable syncHeaderButtons=()->{
+            if(controller==null)return;
+            boolean shuf=controller.getShuffleModeEnabled();
+            int rep=controller.getRepeatMode();
+            qShuffle.setTextColor(shuf?BLUE:MUTED);
+            qShuffle.setBackground(shuf?bg(0xff182C46,12):null);
+            qRepeat.setText(rep==Player.REPEAT_MODE_ONE?"↻¹":"↻");
+            qRepeat.setTextColor(rep==Player.REPEAT_MODE_OFF?MUTED:BLUE);
+            qRepeat.setBackground(rep==Player.REPEAT_MODE_OFF?null:bg(0xff182C46,12));
+        };
+
+        refreshRef[0]=()->{
+            entries.clear();
+            if(controller!=null){
+                int totalItems=controller.getMediaItemCount();
+                List<Integer> order=PlaybackService.active!=null?PlaybackService.active.orderedQueueIndices():fallbackTimelineOrder();
+                if(order.size()!=totalItems){order=fallbackTimelineOrder();}
+                for(int idx:order){
+                    if(idx>=0&&idx<totalItems){
+                        entries.add(new QueueEntry(idx,Track.item(controller.getMediaItemAt(idx))));
+                    }
+                }
+            }
+            subtitle.setText(entries.size()==1?"1 faixa":entries.size()+" faixas");
+            syncHeaderButtons.run();
+            queueAdapter.notifyDataSetChanged();
+        };
+
+        qShuffle.setOnClickListener(v->{toggleShuffleMode();pendingActive[0]=-1;refreshRef[0].run();});
+        qRepeat.setOnClickListener(v->{cycleRepeatMode();refreshRef[0].run();});
+
+        Player.Listener queueListener=new Player.Listener(){
+            @Override public void onEvents(Player player,Player.Events events){
+                if(!dialog.isShowing())return;
+                if(events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION))pendingActive[0]=-1;
+                if(events.containsAny(Player.EVENT_TIMELINE_CHANGED,Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,Player.EVENT_REPEAT_MODE_CHANGED,Player.EVENT_MEDIA_ITEM_TRANSITION)){
+                    refreshRef[0].run();
+                }else{
+                    syncHeaderButtons.run();
+                }
+            }
+        };
+        controller.addListener(queueListener);
+        dialog.setOnDismissListener(d->{if(controller!=null)controller.removeListener(queueListener);});
+
+        refreshRef[0].run();
+        int initialActive=-1;
+        int curIdx=controller.getCurrentMediaItemIndex();
+        for(int i=0;i<entries.size();i++)if(entries.get(i).mediaIndex==curIdx){initialActive=i;break;}
+        int scrollPos=Math.max(0,initialActive);
+
+        dialog.setContentView(box);
+        Window win=dialog.getWindow();
+        win.setBackgroundDrawableResource(android.R.color.transparent);
+        win.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        win.setDimAmount(.5f);
+        dialog.show();
+        int sheetWidth=Math.min(getResources().getDisplayMetrics().widthPixels-dp(16),dp(600));
+        int sheetHeight=(int)(getResources().getDisplayMetrics().heightPixels*.80f);
+        win.setLayout(sheetWidth,sheetHeight);
+        win.setGravity(Gravity.BOTTOM);
+        dialog.setCanceledOnTouchOutside(true);
+        if(!entries.isEmpty())queueList.post(()->queueList.setSelection(scrollPos));
+    }
+
+    private void downloadTab(){
+        heading("Baixar música","");
+        TextView helper=text("Cole um link do YouTube ou pesquise pelo nome da música",13,MUTED,false);
+        content.addView(helper);
+        gap(content,12);
+
+        LinearLayout inputBar=row();
+        inputBar.setBackground(bg(0xff1A2A40,18));
+        inputBar.setPadding(dp(12),dp(5),dp(6),dp(5));
+
+        ytInput=new EditText(this);
+        ytInput.setSingleLine();
+        ytInput.setTextColor(INK);
+        ytInput.setHintTextColor(MUTED);
+        ytInput.setTypeface(getResources().getFont(R.font.inter_regular));
+        ytInput.setTextSize(13);
+        ytInput.setHint("Nome da música ou link do YouTube");
+        ytInput.setBackgroundColor(Color.TRANSPARENT);
+        ytInput.setPadding(dp(4),dp(8),dp(8),dp(8));
+        ytInput.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        ytInput.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI);
+        ytInput.setText(ytQuery);
+        ytInput.setSelection(ytQuery.length());
+        ytInput.addTextChangedListener(new TextWatcher(){
+            public void beforeTextChanged(CharSequence s,int a,int c,int n){}
+            public void onTextChanged(CharSequence s,int a,int b,int c){ytQuery=s.toString();}
+            public void afterTextChanged(Editable e){}
+        });
+        ytInput.setOnEditorActionListener((v,actionId,event)->{
+            if(actionId==EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_DONE||(event!=null&&event.getKeyCode()==KeyEvent.KEYCODE_ENTER&&event.getAction()==KeyEvent.ACTION_DOWN)){
+                submitDownloadQuery(ytInput.getText().toString());
+                return true;
+            }
+            return false;
+        });
+        inputBar.addView(ytInput,new LinearLayout.LayoutParams(0,-2,1));
+
+        Button pasteBtn=button("Colar",false,()->{
+            android.content.ClipboardManager cm=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+            ClipData clip=cm!=null&&cm.hasPrimaryClip()?cm.getPrimaryClip():null;
+            CharSequence raw=clip!=null&&clip.getItemCount()>0?clip.getItemAt(0).coerceToText(this):null;
+            String pasted=raw==null?"":raw.toString().trim();
+            if(pasted.isEmpty()){toast("Área de transferência vazia");return;}
+            ytQuery=pasted;
+            if(ytInput!=null){ytInput.setText(pasted);ytInput.setSelection(pasted.length());}
+            submitDownloadQuery(pasted);
+        });
+        pasteBtn.setContentDescription("Colar link da área de transferência");
+        pasteBtn.setTextSize(12);
+        pasteBtn.setBackground(rippleBg(0xff233650,12));
+        pasteBtn.setMinHeight(dp(40));pasteBtn.setMinimumHeight(dp(40));
+        pasteBtn.setPadding(dp(12),dp(6),dp(12),dp(6));
+        LinearLayout.LayoutParams pasteLp=new LinearLayout.LayoutParams(-2,-2);
+        pasteLp.rightMargin=dp(6);
+        inputBar.addView(pasteBtn,pasteLp);
+
+        Button searchBtn=button("Buscar",true,()->submitDownloadQuery(ytInput!=null?ytInput.getText().toString():ytQuery));
+        searchBtn.setContentDescription("Buscar ou baixar do YouTube");
+        searchBtn.setTextSize(12);
+        searchBtn.setBackground(rippleBg(BLUE,12));
+        searchBtn.setMinHeight(dp(40));searchBtn.setMinimumHeight(dp(40));
+        searchBtn.setPadding(dp(14),dp(6),dp(14),dp(6));
+        inputBar.addView(searchBtn,new LinearLayout.LayoutParams(-2,-2));
+
+        content.addView(inputBar,new LinearLayout.LayoutParams(-1,-2));
+        gap(content,12);
+
+        ytProgressCard=col();
+        GradientDrawable cardBg=bg(CARD,16);
+        cardBg.setStroke(dp(1),0xff273C58);
+        ytProgressCard.setBackground(cardBg);
+        ytProgressCard.setPadding(dp(14),dp(12),dp(14),dp(12));
+
+        ytProgressTitle=text("",15,INK,false);
+        ytProgressTitle.setTypeface(getResources().getFont(R.font.inter_medium));
+        ytProgressTitle.setSingleLine();ytProgressTitle.setEllipsize(TextUtils.TruncateAt.END);
+        ytProgressCard.addView(ytProgressTitle);
+        gap(ytProgressCard,4);
+
+        ytProgressFormat=text("",12,MUTED,false);
+        ytProgressFormat.setSingleLine();ytProgressFormat.setEllipsize(TextUtils.TruncateAt.END);
+        ytProgressCard.addView(ytProgressFormat);
+        gap(ytProgressCard,8);
+
+        ytProgressBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+        ytProgressBar.setMax(1000);
+        ytProgressBar.setProgressTintList(ColorStateList.valueOf(BLUE));
+        ytProgressBar.setProgressBackgroundTintList(ColorStateList.valueOf(0xff263D58));
+        ytProgressCard.addView(ytProgressBar,new LinearLayout.LayoutParams(-1,dp(6)));
+        gap(ytProgressCard,6);
+
+        ytProgressDetail=text("",12,MUTED,false);
+        ytProgressCard.addView(ytProgressDetail);
+        gap(ytProgressCard,10);
+
+        LinearLayout progressActions=row();
+        ytPlayNowBtn=button("Tocar agora",true,()->{if(ytDownloadedTrack!=null)play(Collections.singletonList(ytDownloadedTrack),0);});
+        ytPlayNowBtn.setTextSize(12);ytPlayNowBtn.setMinHeight(dp(40));ytPlayNowBtn.setMinimumHeight(dp(40));
+        ytPlayNowBtn.setPadding(dp(14),dp(6),dp(14),dp(6));
+        LinearLayout.LayoutParams playLp=new LinearLayout.LayoutParams(-2,-2);playLp.rightMargin=dp(8);
+        progressActions.addView(ytPlayNowBtn,playLp);
+
+        ytCloseProgressBtn=button("Fechar",false,()->{ytShowProgressCard=false;syncDownloadProgressCard();});
+        ytCloseProgressBtn.setTextSize(12);ytCloseProgressBtn.setMinHeight(dp(40));ytCloseProgressBtn.setMinimumHeight(dp(40));
+        ytCloseProgressBtn.setBackground(rippleBg(0xff22354D,12));
+        ytCloseProgressBtn.setPadding(dp(14),dp(6),dp(14),dp(6));
+        progressActions.addView(ytCloseProgressBtn,new LinearLayout.LayoutParams(-2,-2));
+        ytProgressCard.addView(progressActions);
+
+        ytQueueBox=col();
+        ytProgressCard.addView(ytQueueBox,new LinearLayout.LayoutParams(-1,-2));
+
+        LinearLayout.LayoutParams progLp=new LinearLayout.LayoutParams(-1,-2);
+        progLp.bottomMargin=dp(12);
+        content.addView(ytProgressCard,progLp);
+        syncDownloadProgressCard();
+
+        FrameLayout frame=new FrameLayout(this);
+        ytList=new ListView(this);
+        ytList.setDivider(null);
+        ytList.setCacheColorHint(Color.TRANSPARENT);
+        ytList.setVerticalScrollBarEnabled(false);
+        ytAdapter=new SearchResultAdapter();
+        ytList.setAdapter(ytAdapter);
+        frame.addView(ytList,new FrameLayout.LayoutParams(-1,-1));
+
+        LinearLayout empty=col();
+        empty.setGravity(Gravity.CENTER);
+        empty.setPadding(dp(16),dp(28),dp(16),dp(28));
+        ytEmptyTitle=text("",18,INK,true);ytEmptyTitle.setGravity(Gravity.CENTER);
+        ytEmptyHelp=text("",13,MUTED,false);ytEmptyHelp.setGravity(Gravity.CENTER);
+        empty.addView(ytEmptyTitle);
+        gap(empty,8);
+        empty.addView(ytEmptyHelp);
+        frame.addView(empty,new FrameLayout.LayoutParams(-1,-1));
+        ytList.setEmptyView(empty);
+
+        content.addView(frame,new LinearLayout.LayoutParams(-1,0,1));
+        syncDownloadEmptyState();
+        installChrome(frame,ytList);
+    }
+
+    private void syncDownloadProgressCard(){
+        if(ytProgressCard==null)return;
+        boolean visible=ytShowProgressCard||ytDownloading||!ytDownloadQueue.isEmpty();
+        ytProgressCard.setVisibility(visible?View.VISIBLE:View.GONE);
+        if(!visible)return;
+        ytProgressTitle.setText(ytDownloadTitle);
+        String formatLine=ytDownloadFormat;
+        if(!ytDownloadQueue.isEmpty())formatLine+=(formatLine.isEmpty()?"":" · ")+ytDownloadQueue.size()+" na fila";
+        ytProgressFormat.setText(formatLine);
+        ytProgressBar.setIndeterminate(ytDownloading&&ytDownloadProgress<=0);
+        ytProgressBar.setProgress(ytDownloadProgress);
+        ytProgressDetail.setText(ytDownloadStatus);
+        ytProgressDetail.setTextColor(ytDownloadFailed?0xffFF8B8B:(ytDownloadDone?BLUE:MUTED));
+        ytPlayNowBtn.setVisibility(!ytDownloading&&ytDownloadDone&&ytDownloadedTrack!=null?View.VISIBLE:View.GONE);
+        ytCloseProgressBtn.setVisibility(ytDownloading||!ytDownloadQueue.isEmpty()?View.GONE:View.VISIBLE);
+
+        if(ytQueueBox!=null){
+            ytQueueBox.removeAllViews();
+            if(ytDownloadQueue.isEmpty()){
+                ytQueueBox.setVisibility(View.GONE);
+            }else{
+                ytQueueBox.setVisibility(View.VISIBLE);
+                gap(ytQueueBox,10);
+                line(ytQueueBox,0xff243953);
+                gap(ytQueueBox,8);
+                LinearLayout qHead=row();
+                TextView qLabel=text("Na fila ("+ytDownloadQueue.size()+")",12,BLUE,true);
+                addWeighted(qHead,qLabel);
+                Button clearQueue=button("Limpar fila",false,()->{ytDownloadQueue.clear();syncDownloadProgressCard();toast("Fila de downloads limpa");});
+                clearQueue.setTextSize(11);clearQueue.setTextColor(MUTED);
+                clearQueue.setBackgroundColor(Color.TRANSPARENT);
+                clearQueue.setMinHeight(dp(32));clearQueue.setMinimumHeight(dp(32));
+                clearQueue.setPadding(dp(8),dp(2),dp(4),dp(2));
+                qHead.addView(clearQueue,new LinearLayout.LayoutParams(-2,-2));
+                ytQueueBox.addView(qHead);
+                int idx=1;
+                for(DownloadItem queued:new ArrayList<>(ytDownloadQueue)){
+                    LinearLayout qRow=row();
+                    qRow.setPadding(0,dp(4),0,dp(4));
+                    TextView qName=text(idx+". "+queued.info.title+" ("+queued.option.qualityLabel+")",12,INK,false);
+                    qName.setSingleLine();qName.setEllipsize(TextUtils.TruncateAt.END);
+                    addWeighted(qRow,qName);
+                    DownloadItem target=queued;
+                    Button rm=button("✕",false,()->{ytDownloadQueue.remove(target);syncDownloadProgressCard();});
+                    rm.setContentDescription("Remover "+queued.info.title+" da fila de downloads");
+                    rm.setTextSize(12);rm.setTextColor(MUTED);
+                    rm.setBackground(rippleBg(0xff1E3048,10));
+                    rm.setMinHeight(dp(32));rm.setMinimumHeight(dp(32));
+                    rm.setPadding(dp(10),dp(2),dp(10),dp(2));
+                    qRow.addView(rm,new LinearLayout.LayoutParams(-2,-2));
+                    ytQueueBox.addView(qRow);
+                    idx++;
+                }
+            }
+        }
+    }
+
+    private void syncDownloadEmptyState(){
+        if(ytEmptyTitle==null||ytEmptyHelp==null)return;
+        if(ytSearching){
+            ytEmptyTitle.setText("Buscando no YouTube…");
+            ytEmptyHelp.setText("Aguarde alguns instantes enquanto carregamos os resultados.");
+        }else if(!ytError.isEmpty()){
+            ytEmptyTitle.setText("Não foi possível concluir");
+            ytEmptyHelp.setText(ytError);
+        }else{
+            ytEmptyTitle.setText("Baixe músicas direto no Freesic");
+            ytEmptyHelp.setText("Pesquise músicas por nome ou cole links do YouTube sem sair do aplicativo.");
+        }
+    }
+
+    private void submitDownloadQuery(String raw){
+        String input=raw==null?"":raw.trim();
+        ytQuery=input;
+        if(input.isEmpty()){toast("Digite o nome da música ou cole um link do YouTube");return;}
+        hideKeyboard();
+        if(YouTubeAudio.isYouTubeUrl(input)){
+            inspectAndShowOptions(input,null);
+            return;
+        }
+        int gen=++ytSearchGen;
+        ytSearching=true;ytError="";ytResults=new ArrayList<>();
+        syncDownloadEmptyState();
+        if(ytAdapter!=null)ytAdapter.notifyDataSetChanged();
+        searchExecutor.execute(()->{
+            try{
+                List<YouTubeAudio.SearchResult> found=YouTubeAudio.search(input);
+                runOnUiThread(()->{
+                    if(isDestroyed()||gen!=ytSearchGen)return;
+                    ytSearching=false;
+                    ytResults=new ArrayList<>(found);
+                    if(found.isEmpty())ytError="Nenhum resultado encontrado para \""+input+"\".";
+                    else ytError="";
+                    syncDownloadEmptyState();
+                    if(ytAdapter!=null)ytAdapter.notifyDataSetChanged();
+                });
+            }catch(Exception e){
+                String msg=friendlyDownloadError(e);
+                runOnUiThread(()->{
+                    if(isDestroyed()||gen!=ytSearchGen)return;
+                    ytSearching=false;
+                    ytError=msg;
+                    syncDownloadEmptyState();
+                    if(ytAdapter!=null)ytAdapter.notifyDataSetChanged();
+                    toast(msg);
+                });
+            }
+        });
+    }
+
+    private void inspectAndShowOptions(String url,String previewTitle){
+        boolean[] cancelled={false};
+        LinearLayout body=row();
+        body.setPadding(dp(22),dp(18),dp(22),dp(18));
+        ProgressBar spinner=new ProgressBar(this);
+        spinner.setIndeterminateTintList(ColorStateList.valueOf(BLUE));
+        body.addView(spinner,new LinearLayout.LayoutParams(dp(30),dp(30)));
+        LinearLayout labels=col();labels.setPadding(dp(16),0,0,0);
+        labels.addView(text(previewTitle!=null&&!previewTitle.isEmpty()?previewTitle:"Analisando link do YouTube",15,INK,true));
+        gap(labels,4);
+        labels.addView(text("Buscando formatos de áudio disponíveis…",12,MUTED,false));
+        body.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
+
+        AlertDialog loading=new VolumeDialogBuilder(this)
+                .setView(body)
+                .setNegativeButton("Cancelar",(d,w)->cancelled[0]=true)
+                .setOnCancelListener(d->cancelled[0]=true)
+                .create();
+        loading.show();
+
+        searchExecutor.execute(()->{
+            try{
+                YouTubeAudio.VideoInfo info=YouTubeAudio.inspect(url);
+                runOnUiThread(()->{
+                    if(isDestroyed()||cancelled[0])return;
+                    if(loading.isShowing())loading.dismiss();
+                    showDownloadOptionsDialog(info);
+                });
+            }catch(Exception e){
+                String msg=friendlyDownloadError(e);
+                runOnUiThread(()->{
+                    if(isDestroyed()||cancelled[0])return;
+                    if(loading.isShowing())loading.dismiss();
+                    toast(msg);
+                });
+            }
+        });
+    }
+
+    private void showDownloadOptionsDialog(YouTubeAudio.VideoInfo info){
+        Dialog dialog=new KeyAwareDialog();
+        LinearLayout box=col();
+        box.setPadding(dp(20),dp(12),dp(20),dp(24));
+        GradientDrawable sheet=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff101D30,0xff101D2F});
+        sheet.setCornerRadii(new float[]{dp(22),dp(22),dp(22),dp(22),0,0,0,0});
+        box.setBackground(sheet);
+
+        View handle=new View(this);handle.setBackground(bg(0xff57708F,4));handle.setContentDescription("Fechar seleção de formato");handle.setOnClickListener(v->dialog.dismiss());
+        LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(dp(44),dp(4));hp.gravity=Gravity.CENTER_HORIZONTAL;box.addView(handle,hp);
+        gap(box,16);
+
+        LinearLayout head=row();
+        addWeighted(head,text("Escolha o formato",21,INK,true));
+        head.addView(icon("down","Fechar",dialog::dismiss),new LinearLayout.LayoutParams(dp(44),dp(44)));
+        box.addView(head);
+        gap(box,12);
+
+        LinearLayout preview=row();
+        GradientDrawable previewBg=bg(CARD,16);previewBg.setStroke(dp(1),0xff22344D);
+        preview.setBackground(previewBg);preview.setPadding(dp(10),dp(10),dp(12),dp(10));
+
+        ImageView thumb=new ImageView(this);
+        thumb.setBackground(bg(0xff101827,10));thumb.setClipToOutline(true);
+        thumb.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        thumb.setImageDrawable(Icons.named(this,"music"));
+        thumb.setImageTintList(ColorStateList.valueOf(0xff78B8FF));
+        thumb.setTag(info.thumbnailUrl);
+        preview.addView(thumb,new LinearLayout.LayoutParams(dp(76),dp(56)));
+        if(!info.thumbnailUrl.isEmpty()){
+            thumbExecutor.execute(()->{
+                Bitmap bmp=YouTubeAudio.fetchThumbnailBitmap(info.thumbnailUrl,dp(160));
+                if(bmp!=null)runOnUiThread(()->{
+                    if(!isDestroyed()&&dialog.isShowing()&&info.thumbnailUrl.equals(thumb.getTag())&&!bmp.isRecycled()){
+                        thumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                        thumb.setImageTintList(null);
+                        thumb.setImageBitmap(bmp);
+                    }
+                });
+            });
+        }
+
+        LinearLayout meta=col();meta.setPadding(dp(12),0,0,0);
+        TextView vTitle=text(info.title,15,INK,false);vTitle.setTypeface(getResources().getFont(R.font.inter_medium));
+        vTitle.setMaxLines(2);vTitle.setEllipsize(TextUtils.TruncateAt.END);meta.addView(vTitle);
+        gap(meta,4);
+        String sub=info.uploader+(info.durationSec>0?" · "+MusicLogic.time(info.durationSec*1000L):"");
+        TextView vSub=text(sub,12,MUTED,false);vSub.setSingleLine();vSub.setEllipsize(TextUtils.TruncateAt.END);meta.addView(vSub);
+        addWeighted(preview,meta);
+        box.addView(preview);
+        gap(box,14);
+
+        for(YouTubeAudio.AudioOption opt:info.audioOptions){
+            LinearLayout optRow=row();
+            GradientDrawable optBg=bg(0xff182B42,14);optBg.setStroke(dp(1),0xff27405F);
+            optRow.setBackground(optBg);
+            optRow.setPadding(dp(14),dp(10),dp(10),dp(10));
+
+            LinearLayout optMeta=col();
+            TextView qLabel=text(opt.qualityLabel,15,INK,false);
+            qLabel.setTypeface(getResources().getFont(R.font.inter_medium));
+            optMeta.addView(qLabel);
+            gap(optMeta,3);
+            String hint="m4a".equals(opt.extension)?"Compatível com qualquer player":"Alta eficiência";
+            optMeta.addView(text(formatBytes(opt.approxBytes)+" · "+hint,12,MUTED,false));
+            addWeighted(optRow,optMeta);
+
+            Runnable choose=()->{dialog.dismiss();startAudioDownload(info,opt);};
+            Button dlBtn=button("Baixar",true,choose);
+            dlBtn.setTextSize(12);dlBtn.setBackground(rippleBg(BLUE,12));
+            dlBtn.setMinHeight(dp(40));dlBtn.setMinimumHeight(dp(40));
+            dlBtn.setPadding(dp(14),dp(6),dp(14),dp(6));
+            optRow.addView(dlBtn,new LinearLayout.LayoutParams(-2,-2));
+            optRow.setOnClickListener(v->choose.run());
+            LinearLayout.LayoutParams op=new LinearLayout.LayoutParams(-1,-2);op.bottomMargin=dp(10);
+            box.addView(optRow,op);
+        }
+
+        ScrollView scroll=new ScrollView(this);
+        scroll.setVerticalScrollBarEnabled(false);
+        scroll.addView(box);
+        dialog.setContentView(scroll);
+        Window win=dialog.getWindow();
+        win.setBackgroundDrawableResource(android.R.color.transparent);
+        win.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        win.setDimAmount(.5f);
+        dialog.show();
+        win.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(16),dp(600)),-2);
+        win.setGravity(Gravity.BOTTOM);
+        dialog.setCanceledOnTouchOutside(true);
+    }
+
+    private android.graphics.drawable.RippleDrawable rippleBg(int color,int radius){
+        return new android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(0x3365ADFF),bg(color,radius),null);
+    }
+
+    private boolean isQueuedOrActive(String url,String qualityLabel){
+        if(ytActiveDownload!=null&&ytActiveDownload.info.url.equals(url)&&ytActiveDownload.option.qualityLabel.equals(qualityLabel))return true;
+        for(DownloadItem d:ytDownloadQueue)if(d.info.url.equals(url)&&d.option.qualityLabel.equals(qualityLabel))return true;
+        return false;
+    }
+
+    private void startAudioDownload(YouTubeAudio.VideoInfo info,YouTubeAudio.AudioOption option){
+        if(Build.VERSION.SDK_INT<29&&checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){
+            pendingDownloadInfo=info;pendingDownloadOption=option;
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},41);
+            return;
+        }
+        if(isQueuedOrActive(info.url,option.qualityLabel)){
+            toast("Esta música já está na fila de downloads");
+            return;
+        }
+        ytDownloadQueue.addLast(new DownloadItem(info,option));
+        if(ytDownloading){
+            ytShowProgressCard=true;
+            syncDownloadProgressCard();
+            toast("Adicionada à fila de downloads (posição "+ytDownloadQueue.size()+")");
+            return;
+        }
+        processNextDownload();
+    }
+
+    private void processNextDownload(){
+        if(ytDownloading||ytDownloadQueue.isEmpty())return;
+        DownloadItem next=ytDownloadQueue.pollFirst();
+        if(next==null)return;
+        ytActiveDownload=next;
+        ytDownloading=true;ytDownloadDone=false;ytDownloadFailed=false;
+        ytDownloadTitle=next.info.title;ytDownloadFormat=next.option.qualityLabel;
+        ytDownloadProgress=0;ytDownloadStatus="Iniciando download…";
+        ytShowProgressCard=true;
+        syncDownloadProgressCard();
+
+        final long[] lastPostMs={0L};
+        downloadExecutor.execute(()->{
+            try{
+                Track downloaded=YouTubeAudio.download(MainActivity.this,next.info,next.option,(bytes,totalBytes)->{
+                    long now=SystemClock.uptimeMillis();
+                    if(now-lastPostMs[0]<120&&(totalBytes<=0||bytes<totalBytes))return;
+                    lastPostMs[0]=now;
+                    int pct=totalBytes>0?(int)Math.min(1000L,Math.max(0L,bytes*1000L/totalBytes)):0;
+                    String detail=totalBytes>0
+                            ?String.format(Locale.forLanguageTag("pt-BR"),"%d%% · %s / %s",Math.round(pct/10f),formatBytes(bytes),formatBytes(totalBytes))
+                            :("Baixando · "+formatBytes(bytes));
+                    runOnUiThread(()->{
+                        if(isDestroyed()||ytActiveDownload!=next)return;
+                        ytDownloadProgress=pct;
+                        ytDownloadStatus=detail;
+                        syncDownloadProgressCard();
+                    });
+                });
+                runOnUiThread(()->{
+                    if(isDestroyed())return;
+                    ytDownloading=false;ytActiveDownload=null;
+                    ytDownloadedTrack=downloaded;
+                    library.removeIf(x->x.uri.equals(downloaded.uri));
+                    library.add(downloaded);
+                    if(list!=null)filter();
+                    scan();
+                    if(!ytDownloadQueue.isEmpty()){
+                        toast("Concluído: "+downloaded.title+" · Próxima da fila iniciando");
+                        processNextDownload();
+                    }else{
+                        ytDownloadDone=true;ytDownloadFailed=false;
+                        ytDownloadProgress=1000;
+                        ytDownloadStatus="Concluído · Salvo em Music/Freesic";
+                        syncDownloadProgressCard();
+                        toast("Download concluído: "+downloaded.title);
+                    }
+                });
+            }catch(Exception e){
+                String msg=friendlyDownloadError(e);
+                runOnUiThread(()->{
+                    if(isDestroyed())return;
+                    ytDownloading=false;ytActiveDownload=null;
+                    if(!ytDownloadQueue.isEmpty()){
+                        toast("Falha em "+next.info.title+": "+msg+" · Avançando fila");
+                        processNextDownload();
+                    }else{
+                        ytDownloadDone=false;ytDownloadFailed=true;
+                        ytDownloadStatus="Falha: "+msg;
+                        syncDownloadProgressCard();
+                        toast("Erro ao baixar: "+msg);
+                    }
+                });
+            }
+        });
+    }
+
+    private final class SearchResultRow {
+        LinearLayout wrapper,card;ImageView thumb;TextView title,detail;Button download;
+        SearchResultRow(){
+            wrapper=col();wrapper.setPadding(0,dp(5),0,dp(5));
+            card=row();
+            GradientDrawable cardBg=bg(CARD,16);cardBg.setStroke(dp(1),0xff22344D);
+            card.setBackground(cardBg);card.setPadding(dp(10),dp(10),dp(10),dp(10));
+
+            thumb=new ImageView(MainActivity.this);
+            thumb.setBackground(bg(0xff101827,10));thumb.setClipToOutline(true);
+            card.addView(thumb,new LinearLayout.LayoutParams(dp(76),dp(56)));
+
+            LinearLayout info=col();info.setPadding(dp(12),0,dp(8),0);
+            title=text("",15,INK,false);title.setTypeface(getResources().getFont(R.font.inter_medium));
+            title.setMaxLines(2);title.setEllipsize(TextUtils.TruncateAt.END);
+            info.addView(title);
+            gap(info,4);
+            detail=text("",12,MUTED,false);detail.setSingleLine();detail.setEllipsize(TextUtils.TruncateAt.END);
+            info.addView(detail);
+            addWeighted(card,info);
+
+            download=button("Baixar",true,()->{});
+            download.setTextSize(12);download.setBackground(rippleBg(BLUE,12));
+            download.setMinHeight(dp(40));download.setMinimumHeight(dp(40));
+            download.setPadding(dp(12),dp(6),dp(12),dp(6));
+            download.setFocusable(false);
+            card.addView(download,new LinearLayout.LayoutParams(-2,-2));
+            wrapper.addView(card,new LinearLayout.LayoutParams(-1,-2));
+            wrapper.setTag(this);
+        }
+    }
+
+    private final class SearchResultAdapter extends BaseAdapter {
+        public int getCount(){return ytResults.size();}
+        public Object getItem(int p){return ytResults.get(p);}
+        public long getItemId(int p){return p;}
+        public View getView(int position,View reused,ViewGroup parent){
+            SearchResultRow h=reused!=null&&reused.getTag() instanceof SearchResultRow?(SearchResultRow)reused.getTag():new SearchResultRow();
+            YouTubeAudio.SearchResult item=ytResults.get(position);
+            h.title.setText(item.title);
+            String dur=item.durationSec>0?" · "+MusicLogic.time(item.durationSec*1000L):"";
+            h.detail.setText(item.uploader+dur);
+            h.thumb.setTag(item.thumbnailUrl);
+            h.thumb.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            h.thumb.setImageDrawable(Icons.named(MainActivity.this,"music"));
+            h.thumb.setImageTintList(ColorStateList.valueOf(0xff78B8FF));
+            if(!item.thumbnailUrl.isEmpty()){
+                String url=item.thumbnailUrl;
+                thumbExecutor.execute(()->{
+                    Bitmap bmp=YouTubeAudio.fetchThumbnailBitmap(url,dp(160));
+                    if(bmp!=null)runOnUiThread(()->{
+                        if(!isDestroyed()&&url.equals(h.thumb.getTag())&&!bmp.isRecycled()){
+                            h.thumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                            h.thumb.setImageTintList(null);
+                            h.thumb.setImageBitmap(bmp);
+                        }
+                    });
+                });
+            }
+            Runnable inspect=()->inspectAndShowOptions(item.url,item.title);
+            h.download.setContentDescription("Baixar "+item.title);
+            h.download.setOnClickListener(v->inspect.run());
+            h.card.setContentDescription(item.title+", "+item.uploader);
+            h.card.setOnClickListener(v->inspect.run());
+            return h.wrapper;
+        }
+    }
+
+    private String formatBytes(long bytes){
+        if(bytes<=0)return "Tamanho aproximado indisponível";
+        Locale pt=Locale.forLanguageTag("pt-BR");
+        if(bytes<1024L*1024L)return String.format(pt,"%.0f KB",Math.max(1f,bytes/1024f));
+        return String.format(pt,"%.1f MB",bytes/(1024f*1024f));
+    }
+
+    private String friendlyDownloadError(Exception e){
+        String msg=e==null||e.getMessage()==null?"":e.getMessage().trim();
+        if(msg.isEmpty())return "Verifique sua conexão e tente novamente.";
+        if(msg.toLowerCase(Locale.ROOT).contains("unable to resolve host")||msg.toLowerCase(Locale.ROOT).contains("failed to connect")||msg.toLowerCase(Locale.ROOT).contains("timeout")){
+            return "Sem conexão com a internet. Verifique sua rede e tente novamente.";
+        }
+        return msg;
     }
     private void pickLyrics(){Track t=current();if(t==null)return;pendingLyrics=t.uri;startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE),51);}
     private void lyricsDialog(){Track t=current();if(t==null)return;String raw=store.lyric(t.uri);LinearLayout body=col();body.setPadding(dp(20),dp(12),dp(20),dp(20));if(lyricText==null)lyricText=text("",18,INK,false);if(lyricText.getParent()!=null)((ViewGroup)lyricText.getParent()).removeView(lyricText);lyricText.setText(raw.isEmpty()?"Adicione uma letra LRC ou TXT para acompanhar a música.":raw);body.addView(lyricText);displayedUri="";updatePlayback();ScrollView scroll=new ScrollView(this);scroll.addView(body);AlertDialog d=new VolumeDialogBuilder(this).setTitle("Letras").setView(scroll).setNeutralButton(raw.isEmpty()?"Adicionar letra":"Trocar letra",(dialog,w)->pickLyrics()).setNegativeButton(raw.isEmpty()?"Cancelar":"Remover",(dialog,w)->{if(!raw.isEmpty()){store.lyric(t.uri,"");displayedUri="";updatePlayback();}}).setPositiveButton("Fechar",null).create();d.setOnDismissListener(dialog->{if(lyricText!=null&&lyricText.getParent()==body)body.removeView(lyricText);});d.show();}

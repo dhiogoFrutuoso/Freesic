@@ -8,7 +8,7 @@
 
 Um player Android para a sua coleção local, com interface azul, capas e controles sempre à mão.
 
-**Android 8+ · Offline · Sem anúncios · Sem conta**
+**Android 8+ · Reprodução local · Sem anúncios · Sem conta**
 
 [**Baixar o APK**](https://github.com/dhiogoFrutuoso/Freesic/releases/latest) · [Novidades](https://github.com/dhiogoFrutuoso/Freesic/releases) · [Reportar um problema](https://github.com/dhiogoFrutuoso/Freesic/issues)
 
@@ -24,8 +24,9 @@ O Freesic encontra as músicas salvas no aparelho e reúne sua coleção em uma 
 | --- | --- |
 | **Sua biblioteca** | Descoberta automática, busca e organização por músicas, álbuns, artistas e pastas. |
 | **Do seu jeito** | Playlists com seleção múltipla, favoritos, histórico e capas dos arquivos. |
-| **Reprodução completa** | Fila, aleatório, repetição, velocidade de 0,5× a 2× e controles na notificação, no Bluetooth e no widget. |
-| **Controle de som** | Volume na tela, equalizador e amplificação de sinal de até 300%, conforme o suporte do aparelho. |
+| **Reprodução completa** | Fila visual com capas e salto direto, aleatório em loop contínuo, repetição, velocidade de 0,5× a 2× e controles na notificação, no Bluetooth e no widget. |
+| **Controle de som** | Volume na tela, equalizador e amplificação de sinal (200% em +43,2 dB e 300% em +74,8 dB com confirmação), conforme o suporte do aparelho. |
+| **Baixar música** | Pesquisa no YouTube dentro do app ou link direto, escolha de formato/qualidade de áudio (M4A/Opus) e fila sequencial de downloads salvos em `Music/Freesic`. |
 | **Para acompanhar** | Letras locais TXT/LRC, sincronização por tempo e temporizador para pausar. |
 | **Sua coleção organizada** | Exportação e importação de playlists e favoritos em JSON. |
 
@@ -39,7 +40,7 @@ Para atualizar, instale o novo APK por cima da versão anterior, com a mesma ass
 
 ## Música local, dados locais
 
-O aplicativo não possui anúncios, telemetria, cadastro ou permissão de internet. A reprodução e a organização acontecem no aparelho; não há streaming, download de músicas ou sincronização em nuvem.
+O aplicativo não possui anúncios, telemetria ou cadastro. A biblioteca e a reprodução acontecem localmente no aparelho; a permissão de internet é utilizada exclusivamente na aba **Baixar** para pesquisar no YouTube e salvar os áudios escolhidos no armazenamento do dispositivo (`Music/Freesic`), sem sincronização em nuvem.
 
 As músicas das capturas servem apenas para demonstração e não acompanham o APK. O backup guarda as referências dos arquivos, não os áudios. Ao escolher outro aplicativo para abrir ou compartilhar um arquivo, valem as permissões desse aplicativo.
 
@@ -49,7 +50,7 @@ As músicas das capturas servem apenas para demonstração e não acompanham o A
 
 **A música está sem capa?** O Freesic usa imagens incorporadas e capas locais. Em **Opções da música → Escolher capa**, você pode associar uma imagem. Não há busca de capas pela internet.
 
-**O que significa amplificação de 300%?** É o nome do preset máximo, que solicita 8.800 mB (+88 dB), após confirmação do aviso de ganho extremo ao efeito Android; não significa triplicar a potência acústica. O resultado depende da saída de áudio e pode distorcer em volumes altos.
+**O que significa amplificação de 300%?** É o nome do preset máximo, que solicita 7.480 mB (+74,8 dB) após confirmação do aviso de ganho extremo ao efeito Android, enquanto o nível 200% solicita 4.320 mB (+43,2 dB); não significa triplicar a potência acústica. O resultado depende da saída de áudio e pode distorcer em volumes altos.
 
 ## Para desenvolver
 
@@ -59,6 +60,7 @@ Aplicativo nativo em **Java 17**, com **AndroidX Media3**, Gradle Wrapper e SDK 
 | --- | --- |
 | [Desenvolvimento](docs/DESENVOLVIMENTO.md) | Ambiente, comandos, assinatura, arquitetura e origem do projeto. |
 | [Engenharia da versão 1.3](docs/ENGENHARIA-1.3.md) | Presets comprovados no Lark, cache de capas, gestos e limites da reconstrução. |
+| [Validação da versão 1.4.0](docs/validacao-1.4.0.json) | Aba Baixar com fila, fila visual de reprodução, aleatório em loop, ganho e integridade do APK. |
 | [Validação da versão 1.3.6](docs/validacao-1.3.6.json) | Gestos, rolagem, controles de volume, testes e integridade do APK. |
 | [Correção da logo — 1.3.1](docs/validacao-1.3.1.json) | Renderização Android em diferentes tamanhos e integridade do APK. |
 | [Validação da versão 1.3](docs/validacao-1.3.json) | Compilação, assinatura, testes e limites da cobertura. |

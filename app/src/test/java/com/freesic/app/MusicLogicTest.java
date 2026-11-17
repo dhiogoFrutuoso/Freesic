@@ -12,8 +12,8 @@ public class MusicLogicTest {
     @Test public void amplificationUsesConfirmedExtremeMaximum(){
         assertEquals(0,MusicLogic.gainMillibels(100));
         assertEquals(1000,MusicLogic.gainMillibels(150));
-        assertEquals(3000,MusicLogic.gainMillibels(200));
-        assertEquals(8800,MusicLogic.gainMillibels(300));
+        assertEquals(4320,MusicLogic.gainMillibels(200));
+        assertEquals(7480,MusicLogic.gainMillibels(300));
     }
     @Test public void amplificationClampsAndSnapsWithoutIntegerOverflow(){
         assertEquals(100,MusicLogic.clampGain(Integer.MIN_VALUE));
@@ -31,5 +31,26 @@ public class MusicLogicTest {
         }
         assertEquals(100,MusicLogic.gainPresetPercent(-1));
         assertEquals(300,MusicLogic.gainPresetPercent(99));
+    }
+    @Test public void youtubeUrlDetectionAndNormalization(){
+        assertTrue(MusicLogic.isYouTubeUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+        assertTrue(MusicLogic.isYouTubeUrl("https://youtu.be/dQw4w9WgXcQ?t=12"));
+        assertTrue(MusicLogic.isYouTubeUrl("https://music.youtube.com/watch?v=abc123"));
+        assertTrue(MusicLogic.isYouTubeUrl("http://m.youtube.com/shorts/abc123"));
+        assertTrue(MusicLogic.isYouTubeUrl("youtu.be/dQw4w9WgXcQ"));
+        assertFalse(MusicLogic.isYouTubeUrl("https://vimeo.com/12345"));
+        assertFalse(MusicLogic.isYouTubeUrl("youtube.com music mix"));
+        assertFalse(MusicLogic.isYouTubeUrl("https://youtube.com/"));
+        assertFalse(MusicLogic.isYouTubeUrl(null));
+        assertEquals("https://youtu.be/abc",MusicLogic.normalizeYouTubeUrl("http://youtu.be/abc"));
+        assertEquals("https://youtube.com/watch?v=1",MusicLogic.normalizeYouTubeUrl("youtube.com/watch?v=1"));
+        assertEquals("",MusicLogic.normalizeYouTubeUrl("not a url"));
+    }
+    @Test public void filenameSanitizationStripsIllegalCharsAndCapsLength(){
+        assertEquals("Artista Nome da Música",MusicLogic.sanitizeFilename("Artista: Nome/da*Música?"));
+        assertEquals("Freesic_audio",MusicLogic.sanitizeFilename("...///:::..."));
+        assertEquals("Freesic_audio",MusicLogic.sanitizeFilename(null));
+        String longName="a".repeat(150);
+        assertEquals(100,MusicLogic.sanitizeFilename(longName).length());
     }
 }

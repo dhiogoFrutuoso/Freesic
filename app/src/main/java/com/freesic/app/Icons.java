@@ -8,7 +8,7 @@ import java.util.*;
 public final class Icons extends Button {
     private static final Map<String,String> names=new HashMap<>();
     static {String[][] pairs={{"▶","play"},{"Ⅱ","pause"},{"❮❮","previous"},{"❯❯","next"},{"⇄","shuffle"},{"↻","repeat"},{"↻¹","repeat_one"},{"♡","heart"},{"♥︎","heart_filled"},{"⋮","more"},{"⌄","down"},{"⇅","sort"},{"+","add"}};for(String[] pair:pairs)names.put(pair[0],pair[1]);}
-    public float glyphSize=24;public Icons(Context c){super(c);for(String n:new String[]{"search","up","down","right","more","volume","equalizer","queue","playlist","settings","music","lyrics","add"})names.put("@"+n,n);}
+    public float glyphSize=24;public Icons(Context c){super(c);for(String n:new String[]{"search","up","down","right","more","volume","equalizer","queue","playlist","settings","music","lyrics","add","download"})names.put("@"+n,n);}
     public static boolean has(String s){return s.startsWith("@")||names.containsKey(s);}
     public static Drawable named(Context c,String name){return c.getDrawable(c.getResources().getIdentifier("ic_"+name,"drawable",c.getPackageName())).mutate();}
     @Override public void setText(CharSequence value,android.widget.TextView.BufferType type){if(value!=null&&value.toString().contentEquals(getText()))return;super.setText(value,type);}

@@ -9,8 +9,8 @@ android {
         applicationId 'com.freesic.app'
         minSdk 26
         targetSdk 36
-        versionCode 10
-        versionName '1.3.6'
+        versionCode 11
+        versionName '1.4.0'
         testInstrumentationRunner 'com.freesic.app.FreesicInstrumentation'
     }
     signingConfigs {
@@ -36,7 +36,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    compileOptions { coreLibraryDesugaringEnabled true; sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     testOptions { unitTests.returnDefaultValues = true }
     lint { abortOnError true; disable 'MissingTranslation' }
 }
@@ -46,5 +46,8 @@ dependencies {
     implementation 'androidx.media3:media3-exoplayer:1.9.3'
     implementation 'androidx.media3:media3-session:1.9.3'
     implementation 'androidx.media3:media3-ui:1.9.3'
+    implementation 'com.github.TeamNewPipe:NewPipeExtractor:v0.27.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
     testImplementation 'junit:junit:4.13.2'
 }

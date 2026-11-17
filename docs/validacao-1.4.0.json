@@ -1,0 +1,33 @@
+{
+  "version": "1.4.0",
+  "versionCode": 11,
+  "apk_sha256": "b2de869e16eb3de25825fa7b98016760b3b0aec92e75586d98a40c062d33a714",
+  "apk_bytes": 4296577,
+  "signature_v2_verified": true,
+  "certificate_sha256": "38443f4e4a81ec77d1cdedb4a13750a0976f089de71a0d1312f725e13189c66b",
+  "gain_200_millibels": 4320,
+  "maximum_target_millibels": 7480,
+  "maximum_ui_label": "300%",
+  "unit_tests_passed": 11,
+  "integration_checks_passed": 55,
+  "lint_errors": 0,
+  "lint_warnings": 75,
+  "release_ui_checks": [
+    "Queue bottom sheet renders BrandView covers, titles, artist/duration, active highlight, and jumps directly to tapped track",
+    "Enabling shuffle enforces REPEAT_MODE_ALL continuous loop without stopping at queue end",
+    "Download tab searches YouTube in-app, inspects direct links, displays M4A/Opus options, and sequentially processes queued downloads",
+    "Extreme gain 300 percent returns 7480 mB and 200 percent returns 4320 mB on active LoudnessEnhancer session"
+  ],
+  "device": "BlueStacks Pie64 (Android 9 / API 28), 900x1600, density 240",
+  "limits": [
+    "No physical device testing or acoustic volume measurement.",
+    "74.8 dB and 43.2 dB are requested digital gains, not dB SPL.",
+    "YouTube search and stream extraction depend on external network availability and NewPipeExtractor compatibility."
+  ],
+  "changes": [
+    "Redistribute 15 percent (1320 mB) from 300 percent (7480 mB) to 200 percent (4320 mB) with gain profile v6.",
+    "Mirror Lark Player shuffle-loop state machine (automatic REPEAT_MODE_ALL) and ordered timeline playback.",
+    "Redesign Play Queue bottom sheet with BrandView cover thumbnails, active indicator, and direct tap-to-jump.",
+    "Add in-app Baixar tab powered by NewPipeExtractor v0.27.1 with YouTube search, link inspection, format selection, and sequential download queue."
+  ]
+}
